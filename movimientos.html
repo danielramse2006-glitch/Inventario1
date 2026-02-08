@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Historial de Movimientos</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #9b59b6; min-height: 100vh; }
+        .mov-container { max-width: 1200px; margin: 20px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .mov-card { background: #f9f9f9; border-left: 5px solid #9b59b6; padding: 15px; margin-bottom: 15px; border-radius: 5px; }
+        .mov-card.entrada { border-left-color: #27ae60; }
+        .mov-card.salida { border-left-color: #e74c3c; }
+        .mov-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .mov-tipo { font-weight: bold; font-size: 16px; padding: 5px 15px; border-radius: 20px; color: white; display: inline-block; }
+        .mov-tipo.salida { background: #e74c3c; }
+        .mov-tipo.entrada { background: #27ae60; }
+        .mov-detalles { font-size: 14px; color: #555; margin-bottom: 10px; }
+        .mov-productos { background: white; padding: 10px; border-radius: 5px; margin-top: 10px; }
+        .mov-productos table { width: 100%; border-collapse: collapse; }
+        .mov-productos th, .mov-productos td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 13px; }
+        .mov-productos th { background: #2c3e50; color: white; }
+        .filtros { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; }
+        .filtros input, .filtros select { padding: 10px; border: 1px solid #ccc; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="mov-container">
+        <h2 style="color:#2c3e50; text-align:center; margin-top:0;">📋 HISTORIAL DE MOVIMIENTOS</h2>
+        
+        <div class="filtros">
+            <input type="text" id="busqueda" placeholder="Buscar por proyecto, receptor o producto..." style="flex:1;">
+            <select id="filtroTipo">
+                <option value="TODOS">🔍 Todos</option>
+                <option value="SALIDA">📤 Salidas</option>
+                <option value="ENTRADA">📥 Devoluciones</option>
+            </select>
+            <button onclick="location.href='index.html'" class="btn-action">🏠 Volver</button>
+        </div>
+
+        <div id="movimientos-lista">
+            <p style="text-align:center; color:#999;">Cargando historial...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        const user = checkAuth();
+        if(user.usuario !== 'admin') {
+            alert("Solo el administrador puede ver el historial");
+            window.location.href = 'index.html';
+        }
+
+        let todosMovimientos = [];
+
+        onSnapshot(query(collection(db, "movimientos"), orderBy("fecha", "desc")), (snap) => {
+            todosMovimientos = [];
+            snap.forEach(d => todosMovimientos.push({id: d.id, ...d.data()}));
+            renderMovimientos(todosMovimientos);
+        });
+
+        function renderMovimientos(lista) {
+            const container = document.getElementById('movimientos-lista');
+            if(lista.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999;">No hay movimientos registrados</p>';
+                return;
+            }
+
+            container.innerHTML = lista.map(mov => {
+                const fecha = mov.fecha?.toDate ? mov.fecha.toDate().toLocaleString('es-MX') : 'Fecha no disponible';
+                const clase = mov.tipo === 'SALIDA' ? 'salida' : 'entrada';
+                
+                return `
+                    <div class="mov-card ${clase}">
+                        <div class="mov-header">
+                            <span class="mov-tipo ${clase}">${mov.tipo === 'SALIDA' ? '📤 SALIDA' : '📥 DEVOLUCIÓN'}</span>
+                            <span style="font-size:13px; color:#666;">${fecha}</span>
+                        </div>
+                        <div class="mov-detalles">
+                            <strong>Almacenista:</strong> ${mov.almacenista || 'N/A'} <br>
+                            ${mov.tipo === 'SALIDA' ? `<strong>Receptor:</strong> ${mov.receptor || 'N/A'} <br>` : ''}
+                            ${mov.tipo === 'SALIDA' ? `<strong>Proyecto:</strong> ${mov.proyecto || 'N/A'}` : ''}
+                            ${mov.tipo === 'ENTRADA' ? `<strong>Devuelto por:</strong> ${mov.receptor || 'N/A'}` : ''}
+                        </div>
+                        <div class="mov-productos">
+                            <strong>Productos:</strong>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Modelo</th>
+                                        <th>No. Parte</th>
+                                        <th>Nombre</th>
+                                        <th style="text-align:center;">Cant.</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${(mov.productos || []).map(p => `
+                                        <tr>
+                                            <td>${p.modelo || '-'}</td>
+                                            <td><strong>${p.noParte || '-'}</strong></td>
+                                            <td>${p.nombre || '-'}</td>
+                                            <td style="text-align:center;">${p.cantidad || 1}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // FILTROS
+        document.getElementById('busqueda').oninput = filtrar;
+        document.getElementById('filtroTipo').onchange = filtrar;
+
+        function filtrar() {
+            const busqueda = document.getElementById('busqueda').value.toLowerCase();
+            const tipo = document.getElementById('filtroTipo').value;
+            
+            let filtrados = todosMovimientos;
+            
+            if(tipo !== 'TODOS') {
+                filtrados = filtrados.filter(m => m.tipo === tipo);
+            }
+            
+            if(busqueda) {
+                filtrados = filtrados.filter(m => {
+                    const textoCompleto = `
+                        ${m.proyecto || ''} 
+                        ${m.receptor || ''} 
+                        ${m.almacenista || ''}
+                        ${(m.productos || []).map(p => `${p.nombre} ${p.noParte} ${p.modelo}`).join(' ')}
+                    `.toLowerCase();
+                    return textoCompleto.includes(busqueda);
+                });
+            }
+            
+            renderMovimientos(filtrados);
+        }
+    </script>
+</body>
+</html>
