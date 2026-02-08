@@ -57,31 +57,73 @@
             border-right: 1px solid #eee;
             padding-right: 20px;
         }
+        
+        /* CORREGIDO: Mejor manejo de imagen */
+        #img-container {
+            position: relative;
+            width: 100%;
+            height: 150px;
+            margin-bottom: 10px;
+        }
+        
         #main-preview-img { 
-            max-width: 100%; 
-            max-height: 150px; 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             object-fit: contain; 
             border-radius: 5px;
-            display: none;
+            z-index: 2;
         }
-        #main-preview-img.loaded { display: block; }
-
+        
         .img-placeholder {
-            width: 150px;
-            height: 150px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             background: #ecf0f1;
             border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto;
             color: #95a5a6;
             font-size: 48px;
+            z-index: 1;
         }
 
-        .upload-controls { margin-top: 10px; display: flex; gap: 8px; justify-content: center; }
-        .btn-sel { background: #7f8c8d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-up { background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none; }
+        .upload-controls { 
+            margin-top: 10px; 
+            display: flex; 
+            gap: 8px; 
+            justify-content: center; 
+            z-index: 3;
+            position: relative;
+        }
+        
+        .btn-sel { 
+            background: #7f8c8d; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+        
+        .btn-up { 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+        
         .btn-up:hover { background: #2ecc71; }
 
         .preview-info-box { flex: 1; overflow-y: auto; height: 100%; }
@@ -89,6 +131,7 @@
 
         .cart-box { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-top: 15px; color: black; }
         
+        /* Resto del CSS se mantiene igual */
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             @page { margin: 1.5cm; size: letter portrait; }
@@ -201,14 +244,17 @@
     <div class="bottom-preview">
         <div class="preview-image-box">
             <span id="status-foto" style="font-size:11px; color:#2980b9; font-weight:bold; margin-bottom:5px;">Selecciona un material</span>
+            
+            <!-- CORREGIDO: Contenedor de imagen mejorado -->
             <div id="img-container">
                 <div class="img-placeholder">📦</div>
-                <img id="main-preview-img" alt="Imagen del producto">
+                <img id="main-preview-img" alt="Imagen del producto" style="display: none;">
             </div>
             
+            <!-- CORREGIDO: Controles de subida siempre visibles si hay permisos -->
             <div class="upload-controls" id="up-ui" style="display:none;">
                 <button class="btn-sel" onclick="document.getElementById('fileInput').click()">📁 Elegir</button>
-                <button id="btnConfirmUp" class="btn-up">🚀 Subir</button>
+                <button id="btnConfirmUp" class="btn-up" style="display:none;">🚀 Subir</button>
                 <input type="file" id="fileInput" accept="image/*" style="display:none;">
             </div>
         </div>
@@ -260,12 +306,12 @@
         if(esAdmin || p.registrar) document.getElementById('navReg').style.display = 'block';
         if(esAdmin || p.actualizar) document.getElementById('navAct').style.display = 'block';
         if(esAdmin || p.eliminar) document.getElementById('navEli').style.display = 'block';
-        if(esAdmin || p.salidas) document.getElementById('navDev').style.display = 'block'; // Devolver tiene mismo permiso que salidas
+        if(esAdmin || p.salidas) document.getElementById('navDev').style.display = 'block';
         if(esAdmin) {
-            document.getElementById('navImp').style.display = 'block'; // Importar solo admin
-            document.getElementById('navMov').style.display = 'block'; // Movimientos solo admin
-            document.getElementById('navExp').style.display = 'block'; // Exportar solo admin
-            document.getElementById('navAdm').style.display = 'block'; // Usuarios solo admin
+            document.getElementById('navImp').style.display = 'block';
+            document.getElementById('navMov').style.display = 'block';
+            document.getElementById('navExp').style.display = 'block';
+            document.getElementById('navAdm').style.display = 'block';
         }
         if(esAdmin || p.subirImagenes) document.getElementById('up-ui').style.display = 'flex';
         if(esAdmin || p.salidas) {
@@ -302,6 +348,7 @@
             });
         }
 
+        // CORREGIDO: Función mejorada para mostrar detalles e imagen
         async function mostrarDetalle(item) {
             itemSeleccionado = item;
             document.getElementById('p-nombre').innerText = item.nombre;
@@ -320,8 +367,9 @@
             const status = document.getElementById('status-foto');
             
             // Resetear visualización
-            img.classList.remove('loaded');
+            img.style.display = 'none';
             placeholder.style.display = 'flex';
+            placeholder.innerHTML = '🔍';
             status.innerText = "Buscando foto...";
             
             try {
@@ -333,45 +381,75 @@
                     
                     // Cargar imagen con manejo de errores
                     img.onload = () => {
-                        img.classList.add('loaded');
+                        img.style.display = 'block';
                         placeholder.style.display = 'none';
-                        status.innerText = "✓ Encontrada en Drive";
+                        status.innerText = "✓ Imagen cargada";
                     };
                     
                     img.onerror = () => {
-                        img.classList.remove('loaded');
+                        img.style.display = 'none';
                         placeholder.style.display = 'flex';
-                        placeholder.innerHTML = '🖼️';
+                        placeholder.innerHTML = '❌';
                         status.innerText = "Error al cargar imagen";
                     };
                     
                     img.src = imgUrl;
                 } else {
                     placeholder.innerHTML = '📷';
-                    status.innerText = "Sin foto";
+                    placeholder.style.display = 'flex';
+                    img.style.display = 'none';
+                    status.innerText = "Sin foto disponible";
                 }
             } catch (e) { 
-                placeholder.innerHTML = '❌';
+                console.error("Error al buscar imagen:", e);
+                placeholder.innerHTML = '🌐';
+                placeholder.style.display = 'flex';
+                img.style.display = 'none';
                 status.innerText = "Error de conexión"; 
             }
         }
 
+        // CORREGIDO: Lógica de subida de imágenes
         const fileInput = document.getElementById('fileInput');
         const btnConfirmUp = document.getElementById('btnConfirmUp');
 
         fileInput.onchange = () => {
-            if(fileInput.files[0]) btnConfirmUp.style.display = 'block';
+            if(fileInput.files[0]) {
+                btnConfirmUp.style.display = 'block';
+                
+                // Vista previa inmediata
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById('main-preview-img');
+                    const placeholder = document.querySelector('.img-placeholder');
+                    img.src = e.target.result;
+                    img.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    document.getElementById('status-foto').innerText = "Vista previa - Listo para subir";
+                };
+                reader.readAsDataURL(fileInput.files[0]);
+            }
         };
 
-        btnConfirmUp.onclick = () => {
-            if(!itemSeleccionado) return alert("Selecciona un material");
+        btnConfirmUp.onclick = async () => {
+            if(!itemSeleccionado) {
+                alert("Selecciona un material primero");
+                return;
+            }
+            
             const file = fileInput.files[0];
+            if(!file) {
+                alert("Selecciona una imagen primero");
+                return;
+            }
+
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
-                document.getElementById('status-foto').innerText = "SUBIENDO...";
+                document.getElementById('status-foto').innerText = "Subiendo...";
                 btnConfirmUp.disabled = true;
                 const base64Data = reader.result.split(',')[1];
+                
                 try {
                     const res = await fetch(scriptURL, {
                         method: "POST",
@@ -383,15 +461,17 @@
                     });
                     const d = await res.json();
                     if(d.result === "success") {
-                        alert("¡Imagen guardada!");
+                        alert("✅ ¡Imagen guardada correctamente!");
                         btnConfirmUp.style.display = 'none';
                         fileInput.value = '';
+                        
+                        // Recargar la imagen
                         mostrarDetalle(itemSeleccionado);
                     } else {
-                        alert("Error: " + d.error);
+                        alert("❌ Error: " + (d.error || "Desconocido"));
                     }
                 } catch (e) { 
-                    alert("Error al subir: " + e.message); 
+                    alert("❌ Error de conexión: " + e.message); 
                 }
                 btnConfirmUp.disabled = false;
             };
@@ -399,14 +479,20 @@
 
         window.agregar = (id) => {
             const prod = productos.find(x => x.id === id);
-            if(prod.cantidad < 1) return alert("Sin stock");
+            if(prod.cantidad < 1) {
+                alert("❌ Sin stock disponible");
+                return;
+            }
             carrito.push(prod);
             dibujarCarrito();
         };
 
         function dibujarCarrito() {
             const list = document.getElementById('cart-list');
-            if(carrito.length === 0) { list.innerHTML = "<i>Vacío</i>"; return; }
+            if(carrito.length === 0) { 
+                list.innerHTML = "<i>Vacío</i>"; 
+                return; 
+            }
             list.innerHTML = carrito.map((item, i) => `
                 <div style="border-bottom:1px solid #eee; padding:3px; display:flex; justify-content:space-between; align-items:center; color:black;">
                     <span style="font-size:11px;">${item.nombre}</span>
@@ -418,7 +504,16 @@
         window.procesarSalida = async () => {
             const receptor = document.getElementById('recep').value.trim();
             const proyecto = document.getElementById('proyec').value.trim();
-            if(!receptor || !proyecto || carrito.length === 0) return alert("Completa todos los datos del vale");
+            
+            if(!receptor || !proyecto) {
+                alert("❌ Completa todos los datos del vale");
+                return;
+            }
+            
+            if(carrito.length === 0) {
+                alert("❌ Agrega al menos un producto al vale");
+                return;
+            }
 
             if(confirm("¿Generar vale y descontar del inventario?")) {
                 const fechaHora = new Date();
@@ -426,6 +521,7 @@
                 document.getElementById('f-alm').innerText = user.usuario;
                 document.getElementById('f-rec').innerText = receptor;
                 document.getElementById('f-pro').innerText = proyecto;
+                
                 document.getElementById('f-lista').innerHTML = carrito.map(i => `
                     <tr>
                         <td style="text-align:center;">1 PZ</td>
@@ -435,33 +531,40 @@
                     </tr>
                 `).join('');
 
-                // GUARDAR EN FIRESTORE (COLECCIÓN "movimientos")
-                await addDoc(collection(db, "movimientos"), {
-                    tipo: "SALIDA",
-                    fecha: serverTimestamp(),
-                    receptor: receptor,
-                    proyecto: proyecto,
-                    almacenista: user.usuario,
-                    productos: carrito.map(item => ({
-                        id: item.id,
-                        modelo: item.modelo || '',
-                        noParte: item.noParte || '',
-                        nombre: item.nombre || '',
-                        cantidad: 1
-                    }))
-                });
+                // GUARDAR EN FIRESTORE
+                try {
+                    await addDoc(collection(db, "movimientos"), {
+                        tipo: "SALIDA",
+                        fecha: serverTimestamp(),
+                        receptor: receptor,
+                        proyecto: proyecto,
+                        almacenista: user.usuario,
+                        productos: carrito.map(item => ({
+                            id: item.id,
+                            modelo: item.modelo || '',
+                            noParte: item.noParte || '',
+                            nombre: item.nombre || '',
+                            cantidad: 1
+                        }))
+                    });
 
-                // DESCONTAR STOCK
-                for (const item of carrito) {
-                    await updateDoc(doc(db, "productos", item.id), { cantidad: increment(-1) });
+                    // DESCONTAR STOCK
+                    for (const item of carrito) {
+                        await updateDoc(doc(db, "productos", item.id), { 
+                            cantidad: increment(-1) 
+                        });
+                    }
+
+                    window.print();
+                    carrito = [];
+                    dibujarCarrito();
+                    document.getElementById('recep').value = '';
+                    document.getElementById('proyec').value = '';
+                    alert("✅ Vale generado y movimiento registrado");
+                    
+                } catch (error) {
+                    alert("❌ Error al guardar: " + error.message);
                 }
-
-                window.print();
-                carrito = [];
-                dibujarCarrito();
-                document.getElementById('recep').value = '';
-                document.getElementById('proyec').value = '';
-                alert("✅ Vale generado y movimiento registrado");
             }
         };
 
