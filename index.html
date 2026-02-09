@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <title>Inventario - Panel Principal</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         body, html { 
             height: 100%; 
@@ -235,12 +234,12 @@
             <button id="navAdm" style="display:none; background:#f1c40f;" onclick="location.href='usuarios.html'">👥 Usuarios</button>
             
             <div id="cart-box" class="cart-box" style="display:none;">
-                <h4 style="margin:0; text-align:center; color:#2c3e50; font-size: 14px;">📋 VALE DE SALIDA</h4>
-                <div id="cart-list" style="margin: 8px 0; font-size: 0.75em; max-height: 70px; overflow-y:auto;"><i>Vacío</i></div>
+                <h4 style="margin:0; text-align:center; color:#2c3e50; font-size: 14px;">📋 REGISTRAR SALIDA</h4>
+                <div id="cart-list" style="margin: 8px 0; font-size: 0.75em; max-height: 70px; overflow-y:auto;"><i>Vacío - Agrega materiales con el botón +</i></div>
                 <input type="text" id="recep" placeholder="¿Quién recibe?" style="width:100%; padding:6px; margin:3px 0; border:1px solid #ddd; border-radius:3px; font-size:12px;">
                 <input type="text" id="proyec" placeholder="Proyecto" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:3px; font-size:12px;">
                 <button onclick="procesarSalida()" style="width:100%; background:#e67e22; color:white; border:none; padding:8px; margin-top:6px; cursor:pointer; font-weight:bold; border-radius:4px; font-size:12px;">
-                    📄 GENERAR VALE
+                    ✅ REGISTRAR SALIDA
                 </button>
             </div>
             
@@ -310,9 +309,12 @@
         if(esAdmin || p.salidas) document.getElementById('navDev').style.display = 'block';
         if(esAdmin) {
             document.getElementById('navImp').style.display = 'block';
-            document.getElementById('navMov').style.display = 'block';
             document.getElementById('navExp').style.display = 'block';
             document.getElementById('navAdm').style.display = 'block';
+        }
+        // MOVIMIENTOS visible para admin y usuarios con permiso de salidas
+        if(esAdmin || p.salidas) {
+            document.getElementById('navMov').style.display = 'block';
         }
         if(esAdmin || p.subirImagenes) document.getElementById('up-ui').style.display = 'flex';
         
@@ -369,7 +371,7 @@
             });
         }
 
-        // SOLUCIÓN PARA IMÁGENES: Prueba múltiples formatos
+        // SOLUCIÓN MEJORADA PARA IMÁGENES
         async function cargarImagenDrive(itemNombre, imgElement, statusElement) {
             try {
                 const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(itemNombre)}`);
@@ -378,43 +380,45 @@
                 if(data.result === "success" && data.id) {
                     const driveId = data.id;
                     
-                    // Prueba con diferentes formatos de URL
+                    // PRUEBA CON DIFERENTES FORMATOS
                     const urlFormats = [
-                        `https://lh3.googleusercontent.com/d/${driveId}=s500`, // Con tamaño definido
-                        `https://drive.google.com/thumbnail?id=${driveId}&sz=w500`, // Google Drive thumbnail
-                        `https://drive.google.com/uc?export=view&id=${driveId}`, // URL directa
-                        `https://docs.google.com/uc?id=${driveId}` // Alternativa
+                        `https://drive.google.com/uc?export=view&id=${driveId}`,  // Formato más común
+                        `https://lh3.googleusercontent.com/d/${driveId}=s500`,    // Formato lh3 con tamaño
+                        `https://docs.google.com/uc?id=${driveId}`,               // Alternativa docs
+                        `https://drive.google.com/file/d/${driveId}/view`         // Vista de archivo
                     ];
                     
-                    // Función recursiva para probar URLs
-                    const tryUrl = (index) => {
-                        if (index >= urlFormats.length) {
-                            statusElement.innerText = "Imagen no accesible";
-                            return;
-                        }
-                        
-                        const testImg = new Image();
-                        testImg.onload = () => {
-                            // Si carga, usar esta URL
-                            imgElement.src = urlFormats[index];
-                            statusElement.innerText = "✓ Imagen cargada";
-                        };
-                        testImg.onerror = () => {
-                            // Si falla, probar la siguiente
-                            tryUrl(index + 1);
-                        };
-                        testImg.src = urlFormats[index];
-                    };
+                    let imagenCargada = false;
                     
-                    // Empezar con la primera URL
-                    tryUrl(0);
+                    for (let url of urlFormats) {
+                        try {
+                            const testImg = new Image();
+                            await new Promise((resolve, reject) => {
+                                testImg.onload = () => resolve(true);
+                                testImg.onerror = () => reject();
+                                testImg.src = url;
+                            });
+                            
+                            // Si llega aquí, la imagen cargó
+                            imgElement.src = url;
+                            statusElement.innerText = "✓ Imagen cargada";
+                            imagenCargada = true;
+                            break;
+                        } catch (e) {
+                            continue; // Intentar siguiente URL
+                        }
+                    }
+                    
+                    if (!imagenCargada) {
+                        statusElement.innerText = "Imagen no disponible";
+                    }
                     
                 } else {
-                    statusElement.innerText = "Sin foto";
+                    statusElement.innerText = "Sin foto registrada";
                 }
             } catch (e) { 
-                console.log("Error imagen:", e);
-                statusElement.innerText = "Error de red";
+                console.log("Error cargando imagen:", e);
+                statusElement.innerText = "Error de conexión";
             }
         }
 
@@ -488,7 +492,7 @@
             };
         };
 
-        // Carrito y salidas - CORREGIDO PARA EVITAR ERROR DE PERMISOS
+        // Carrito y salidas - SOLO REGISTRO EN MOVIMIENTOS
         window.agregar = (id) => {
             const prod = productos.find(x => x.id === id);
             if(!prod) return;
@@ -532,7 +536,7 @@
             `).join('');
         }
 
-        // PROCESAR SALIDA - CON MANEJO MEJORADO DE ERRORES
+        // PROCESAR SALIDA - SOLO REGISTRO EN MOVIMIENTOS (SIN PDF)
         window.procesarSalida = async () => {
             const r = document.getElementById('recep').value.trim();
             const py = document.getElementById('proyec').value.trim();
@@ -540,168 +544,54 @@
             if(!r || !py) return alert("❌ Ingresa quién recibe y el proyecto");
             if(carrito.length === 0) return alert("❌ Agrega materiales al vale");
 
-            if(confirm(`¿Generar vale para ${r} (${carrito.length} productos)?`)) {
+            if(confirm(`¿Registrar salida para ${r} (${carrito.length} productos)?`)) {
                 try {
-                    // 1. Primero descontar stock (esto ya funciona)
+                    // 1. Descontar stock
                     for (const item of carrito) {
                         await updateDoc(doc(db, "productos", item.id), { 
                             cantidad: increment(-item.cantidad) 
                         });
                     }
 
-                    // 2. Intentar registrar movimiento (pero si falla, no bloquear)
-                    try {
-                        await addDoc(collection(db, "movimientos"), {
-                            tipo: "SALIDA",
-                            fecha: serverTimestamp(),
-                            almacenista: user.usuario,
-                            receptor: r,
-                            proyecto: py,
-                            productos: carrito.map(item => ({
-                                id: item.id,
-                                modelo: item.modelo || '',
-                                noParte: item.noParte || '',
-                                nombre: item.nombre || '',
-                                cantidad: item.cantidad
-                            }))
-                        });
-                    } catch (movError) {
-                        console.warn("Movimiento no registrado (permisos):", movError);
-                        // Continuamos aunque falle el registro
-                    }
+                    // 2. Registrar movimiento de salida
+                    await addDoc(collection(db, "movimientos"), {
+                        tipo: "SALIDA",
+                        fecha: serverTimestamp(),
+                        almacenista: user.usuario,
+                        receptor: r,
+                        proyecto: py,
+                        productos: carrito.map(item => ({
+                            id: item.id,
+                            modelo: item.modelo || '',
+                            noParte: item.noParte || '',
+                            nombre: item.nombre || '',
+                            cantidad: item.cantidad
+                        }))
+                    });
 
-                    // 3. Generar PDF (siempre debe funcionar)
-                    generarPDF(r, py, carrito);
+                    // 3. Mostrar confirmación
+                    alert(`✅ Salida registrada exitosamente\n\n📋 Detalles:\n• Receptor: ${r}\n• Proyecto: ${py}\n• Productos: ${carrito.length}\n• Total piezas: ${carrito.reduce((sum, item) => sum + item.cantidad, 0)}\n\n📝 Puedes revisar el historial completo en "Movimientos"`);
 
-                    // 4. Limpiar
+                    // 4. Limpiar carrito
                     carrito = []; 
                     dibujarCarrito();
                     document.getElementById('recep').value = ''; 
                     document.getElementById('proyec').value = '';
                     
                 } catch (err) {
-                    console.error("Error crítico:", err);
-                    alert("⚠️ Error: " + (err.message || "Revise permisos de Firestore"));
+                    console.error("Error:", err);
+                    
+                    // Mensaje más específico según el error
+                    if (err.message.includes("permission") || err.message.includes("Permiso")) {
+                        alert("❌ Error de permisos: No tienes permiso para registrar movimientos.\nContacta al administrador.");
+                    } else if (err.message.includes("network") || err.message.includes("conexión")) {
+                        alert("❌ Error de red: Verifica tu conexión a internet.");
+                    } else {
+                        alert("❌ Error al registrar salida: " + err.message);
+                    }
                 }
             }
         };
-
-        // GENERAR PDF MEJORADO
-        function generarPDF(receptor, proyecto, items) {
-            try {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF();
-                
-                // Encabezado
-                pdf.setFillColor(26, 35, 126);
-                pdf.rect(0, 0, 210, 25, 'F');
-                
-                pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(18);
-                pdf.setFont("helvetica", "bold");
-                pdf.text("UNIVERSIDAD TAMAULIPECA", 105, 12, { align: 'center' });
-                
-                pdf.setFontSize(12);
-                pdf.text("ALMACÉN UT - VALE DE SALIDA", 105, 20, { align: 'center' });
-                
-                // Información
-                pdf.setTextColor(0, 0, 0);
-                pdf.setFontSize(10);
-                pdf.setFont("helvetica", "normal");
-                
-                const fecha = new Date().toLocaleDateString('es-MX');
-                const hora = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
-                
-                pdf.text(`Fecha: ${fecha}`, 20, 35);
-                pdf.text(`Hora: ${hora}`, 20, 41);
-                pdf.text(`Entrega: ${user.usuario}`, 110, 35);
-                pdf.text(`Recibe: ${receptor}`, 110, 41);
-                pdf.text(`Proyecto: ${proyecto}`, 20, 47);
-                
-                // Tabla
-                let y = 60;
-                
-                // Encabezado tabla
-                pdf.setFillColor(44, 62, 80);
-                pdf.rect(20, y, 170, 8, 'F');
-                pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(9);
-                pdf.setFont("helvetica", "bold");
-                
-                pdf.text("CANT.", 22, y + 5.5);
-                pdf.text("MODELO", 45, y + 5.5);
-                pdf.text("NO. PARTE", 90, y + 5.5);
-                pdf.text("DESCRIPCIÓN", 135, y + 5.5);
-                
-                y += 8;
-                pdf.setTextColor(0, 0, 0);
-                pdf.setFont("helvetica", "normal");
-                
-                // Productos (máximo 15 por página)
-                let itemsEnPagina = 0;
-                
-                items.forEach((item, index) => {
-                    if (itemsEnPagina >= 15) {
-                        pdf.addPage();
-                        y = 20;
-                        itemsEnPagina = 0;
-                    }
-                    
-                    pdf.rect(20, y, 170, 7);
-                    pdf.text(`${item.cantidad} PZ`, 22, y + 4.5);
-                    
-                    const modelo = (item.modelo || '-').substring(0, 12);
-                    const noParte = (item.noParte || '-').substring(0, 12);
-                    const nombre = (item.nombre || '-').substring(0, 25);
-                    
-                    pdf.text(modelo, 45, y + 4.5);
-                    pdf.text(noParte, 90, y + 4.5);
-                    pdf.text(nombre, 135, y + 4.5);
-                    
-                    y += 7;
-                    itemsEnPagina++;
-                });
-                
-                // Totales
-                y += 5;
-                pdf.setFont("helvetica", "bold");
-                pdf.text(`TOTAL PRODUCTOS: ${items.length}`, 20, y);
-                pdf.text(`TOTAL PIEZAS: ${items.reduce((sum, item) => sum + item.cantidad, 0)}`, 120, y);
-                
-                // Firmas
-                y += 20;
-                pdf.line(30, y, 100, y);
-                pdf.line(110, y, 180, y);
-                
-                y += 5;
-                pdf.setFontSize(8);
-                pdf.text("FIRMA ENTREGA", 50, y);
-                pdf.text("FIRMA RECIBE", 130, y);
-                
-                // Guardar
-                const nombreArchivo = `Vale_${receptor}_${fecha.replace(/\//g, '-')}.pdf`;
-                pdf.save(nombreArchivo);
-                
-                alert(`✅ PDF generado: ${nombreArchivo}\nStock descontado correctamente.`);
-                
-            } catch (pdfErr) {
-                console.error("Error PDF:", pdfErr);
-                alert("⚠️ Stock descontado, pero error al crear PDF.\nDescarga manual desde: Imprimir > Guardar como PDF");
-                
-                // Mostrar vale en pantalla para imprimir manualmente
-                document.getElementById('f-fec').innerText = new Date().toLocaleDateString();
-                document.getElementById('f-alm').innerText = user.usuario;
-                document.getElementById('f-rec').innerText = receptor;
-                document.getElementById('f-pro').innerText = proyecto;
-                document.getElementById('f-lista').innerHTML = items.map(i => `
-                    <tr><td>${i.cantidad} PZ</td><td>${i.modelo}</td><td>${i.noParte}</td><td>${i.nombre}</td></tr>
-                `).join('');
-                
-                document.getElementById('print-vale').style.display = 'block';
-                window.print();
-                document.getElementById('print-vale').style.display = 'none';
-            }
-        }
 
         // Buscador
         document.getElementById('mainSearch').oninput = (e) => {
@@ -713,28 +603,5 @@
             ));
         };
     </script>
-
-    <!-- Vale para impresión (backup) -->
-    <div id="print-vale" style="display:none; padding: 20px; font-family: Arial;">
-        <h2 style="text-align:center; color: #1a237e;">UNIVERSIDAD TAMAULIPECA</h2>
-        <h3 style="text-align:center; color: #283593;">Almacén UT - Vale de Salida</h3>
-        <hr>
-        <p><strong>Fecha:</strong> <span id="f-fec"></span></p>
-        <p><strong>Entrega:</strong> <span id="f-alm"></span></p>
-        <p><strong>Recibe:</strong> <span id="f-rec"></span></p>
-        <p><strong>Proyecto:</strong> <span id="f-pro"></span></p>
-        <table border="1" style="width:100%; border-collapse:collapse; margin-top:15px; font-size:12px;">
-            <thead>
-                <tr style="background:#2c3e50; color:white;">
-                    <th>CANT.</th><th>MODELO</th><th>NO. PARTE</th><th>DESCRIPCIÓN</th>
-                </tr>
-            </thead>
-            <tbody id="f-lista"></tbody>
-        </table>
-        <div style="margin-top:50px; display:flex; justify-content:space-around;">
-            <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top:5px;">Firma Entrega</div>
-            <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top:5px;">Firma Recibe</div>
-        </div>
-    </div>
 </body>
 </html>
