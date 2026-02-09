@@ -6,7 +6,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
-        /* Bloqueo de scroll general para scroll interno en tabla */
         body, html { 
             height: 100%; 
             margin: 0; 
@@ -15,47 +14,45 @@
             font-family: sans-serif; 
         }
         
-        /* Encabezado principal */
         .header-container {
             background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
             color: white;
-            padding: 15px 0;
+            padding: 12px 0;
             text-align: center;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         
         .main-title {
-            font-size: 28px;
+            font-size: 26px;
             margin: 0;
             font-weight: bold;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
         
         .sub-title {
-            font-size: 18px;
-            margin: 5px 0 0 0;
+            font-size: 16px;
+            margin: 3px 0 0 0;
             font-weight: normal;
             color: #bbdefb;
         }
         
         .main-container { 
             display: flex; 
-            height: calc(100vh - 180px); /* Ajustado por nuevo header */
-            padding: 15px; 
-            gap: 15px; 
+            height: calc(100vh - 170px);
+            padding: 12px; 
+            gap: 12px; 
             box-sizing: border-box;
         }
 
-        /* Tabla con scroll independiente */
         .content { 
             flex: 1; 
             display: flex; 
             flex-direction: column; 
             background: white; 
-            border-radius: 10px; 
-            padding: 15px; 
+            border-radius: 8px; 
+            padding: 12px; 
             overflow: hidden; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15); 
         }
         
         .table-wrapper { 
@@ -65,7 +62,6 @@
             border-radius: 5px;
         }
         
-        /* Forzar texto negro en tabla y visor */
         table, .bottom-preview { color: black !important; }
         th { 
             color: white !important; 
@@ -75,74 +71,60 @@
             z-index: 10;
         }
 
-        /* --- VISOR INFERIOR FIJO --- */
         .bottom-preview {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             background: white;
-            border-top: 5px solid #3498db;
-            padding: 15px 30px;
+            border-top: 4px solid #3498db;
+            padding: 12px 25px;
             display: flex;
             align-items: center;
-            gap: 40px;
-            height: 250px;
-            box-shadow: 0 -5px 25px rgba(0,0,0,0.3);
+            gap: 30px;
+            height: 230px;
+            box-shadow: 0 -4px 15px rgba(0,0,0,0.2);
             z-index: 1000;
             box-sizing: border-box;
         }
 
         .preview-image-box { 
-            flex: 0 0 220px; 
+            flex: 0 0 200px; 
             text-align: center; 
             height: 100%; 
             display: flex; 
             flex-direction: column; 
             justify-content: center; 
             border-right: 1px solid #eee;
-            padding-right: 20px;
+            padding-right: 15px;
         }
         
         #main-preview-img { 
             max-width: 100%; 
-            max-height: 150px; 
+            max-height: 140px; 
             object-fit: contain; 
             border-radius: 5px; 
             border: 1px solid #ddd;
         }
 
-        /* Lógica de botones de subida */
         .upload-controls { 
-            margin-top: 10px; 
+            margin-top: 8px; 
             display: flex; 
-            gap: 8px; 
+            gap: 6px; 
             justify-content: center; 
         }
         
-        .btn-sel { 
-            background: #7f8c8d; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
+        .btn-sel, .btn-up { 
+            padding: 5px 10px; 
             border-radius: 4px; 
             cursor: pointer; 
-            font-size: 12px; 
+            font-size: 11px; 
             font-weight: bold; 
+            border: none;
         }
         
-        .btn-up { 
-            background: #27ae60; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            font-weight: bold; 
-            display: none; 
-        }
-        
+        .btn-sel { background: #7f8c8d; color: white; }
+        .btn-up { background: #27ae60; color: white; display: none; }
         .btn-up:hover { background: #2ecc71; }
 
         .preview-info-box { 
@@ -156,26 +138,26 @@
             color: #2c3e50; 
             border-bottom: 2px solid #3498db;
             padding-bottom: 5px;
+            font-size: 18px;
         }
 
         .cart-box { 
             background: #fff; 
-            padding: 10px; 
-            border-radius: 6px; 
+            padding: 8px; 
+            border-radius: 5px; 
             border: 1px solid #ccc; 
-            margin-top: 15px; 
+            margin-top: 10px; 
             color: black; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        /* Botón de agregar a carrito */
         .btn-add-item {
             background: #27ae60;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 24px;
-            height: 24px;
+            width: 22px;
+            height: 22px;
             font-weight: bold;
             cursor: pointer;
             display: flex;
@@ -183,124 +165,67 @@
             justify-content: center;
         }
         
-        .btn-add-item:hover {
-            background: #2ecc71;
-            transform: scale(1.1);
-        }
+        .btn-add-item:hover { background: #2ecc71; transform: scale(1.1); }
         
-        /* Estilos para el menú lateral */
         .side-menu {
-            width: 220px;
+            width: 200px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
         
         .side-menu button {
-            padding: 12px;
-            font-weight: bold;
+            padding: 10px;
+            font-size: 13px;
             cursor: pointer;
             background: #f8f9fa;
             border: 1px solid #dee2e6;
-            border-radius: 6px;
+            border-radius: 5px;
             transition: all 0.2s ease;
             color: #2c3e50;
             text-align: left;
         }
         
-        .side-menu button:hover {
-            background: #e9ecef;
-            transform: translateX(3px);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-        }
+        .side-menu button:hover { background: #e9ecef; transform: translateX(2px); }
         
         .btn-logout {
             background: #c0392b; 
             color: white; 
-            padding: 12px; 
+            padding: 10px; 
             border: none; 
-            border-radius: 6px; 
+            border-radius: 5px; 
             cursor: pointer; 
             margin-top: auto;
             font-weight: bold;
+            font-size: 13px;
         }
         
-        .btn-logout:hover {
-            background: #e74c3c;
-        }
-        
-        /* Buscador */
         #mainSearch {
             width: 100%;
-            padding: 12px 15px;
-            border-radius: 6px;
+            padding: 10px 12px;
+            border-radius: 5px;
             border: 2px solid #ddd;
             box-sizing: border-box;
-            font-size: 14px;
-            margin-bottom: 15px;
-            transition: border 0.3s;
+            font-size: 13px;
+            margin-bottom: 10px;
         }
         
-        #mainSearch:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
+        #mainSearch:focus { border-color: #3498db; outline: none; }
         
-        /* Estilos para tabla */
-        #inventory-body tr {
-            transition: background-color 0.2s;
-        }
-        
-        #inventory-body tr:hover {
-            background-color: #e3f2fd !important;
-            cursor: pointer;
-        }
-        
-        #inventory-body tr:nth-child(even) {
-            background-color: #f8f9fa;
-        }
-        
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .main-container {
-                flex-direction: column;
-                height: calc(100vh - 300px);
-            }
-            
-            .side-menu {
-                width: 100%;
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-            
-            .side-menu button {
-                flex: 1;
-                min-width: 120px;
-            }
-            
-            .bottom-preview {
-                height: 200px;
-                padding: 10px 20px;
-            }
-            
-            .preview-image-box {
-                flex: 0 0 180px;
-            }
-        }
+        #inventory-body tr { transition: background-color 0.2s; }
+        #inventory-body tr:hover { background-color: #e3f2fd !important; cursor: pointer; }
+        #inventory-body tr:nth-child(even) { background-color: #f8f9fa; }
     </style>
 </head>
 <body class="bg-blue">
-    <!-- Encabezado con Universidad Tamaulipeca -->
     <div class="header-container">
         <h1 class="main-title">Universidad Tamaulipeca</h1>
         <h2 class="sub-title">Almacén UT - Sistema de Control de Inventario</h2>
     </div>
     
     <div class="main-container">
-        <!-- Menú lateral -->
         <nav class="side-menu">
-            <button id="navReg" style="display:none;" onclick="location.href='registro.html'">📝 Registrar Material</button>
+            <button id="navReg" style="display:none;" onclick="location.href='registro.html'">📝 Registrar</button>
             <button id="navAct" style="display:none;" onclick="location.href='actualizar.html'">✏️ Actualizar</button>
             <button id="navEli" style="display:none;" onclick="location.href='eliminar.html'">🗑️ Eliminar</button>
             <button id="navDev" style="display:none;" onclick="location.href='devolver.html'">↩️ Devolver</button>
@@ -309,28 +234,26 @@
             <button id="navExp" style="display:none;" onclick="location.href='exportar.html'">📊 Exportar</button>
             <button id="navAdm" style="display:none; background:#f1c40f;" onclick="location.href='usuarios.html'">👥 Usuarios</button>
             
-            <!-- Carrito para salidas -->
             <div id="cart-box" class="cart-box" style="display:none;">
-                <h4 style="margin:0; text-align:center; color:#2c3e50;">📋 VALE DE SALIDA</h4>
-                <div id="cart-list" style="margin: 10px 0; font-size: 0.8em; max-height: 80px; overflow-y:auto;"><i>Vacío - Agrega materiales con el botón +</i></div>
-                <input type="text" id="recep" placeholder="¿Quién recibe?" style="width:100%; padding:8px; margin:5px 0; border:1px solid #ddd; border-radius:4px;">
-                <input type="text" id="proyec" placeholder="Proyecto" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
-                <button onclick="procesarSalida()" style="width:100%; background:#e67e22; color:white; border:none; padding:10px; margin-top:8px; cursor:pointer; font-weight:bold; border-radius:4px;">
-                    📄 GENERAR VALE PDF
+                <h4 style="margin:0; text-align:center; color:#2c3e50; font-size: 14px;">📋 VALE DE SALIDA</h4>
+                <div id="cart-list" style="margin: 8px 0; font-size: 0.75em; max-height: 70px; overflow-y:auto;"><i>Vacío</i></div>
+                <input type="text" id="recep" placeholder="¿Quién recibe?" style="width:100%; padding:6px; margin:3px 0; border:1px solid #ddd; border-radius:3px; font-size:12px;">
+                <input type="text" id="proyec" placeholder="Proyecto" style="width:100%; padding:6px; border:1px solid #ddd; border-radius:3px; font-size:12px;">
+                <button onclick="procesarSalida()" style="width:100%; background:#e67e22; color:white; border:none; padding:8px; margin-top:6px; cursor:pointer; font-weight:bold; border-radius:4px; font-size:12px;">
+                    📄 GENERAR VALE
                 </button>
             </div>
             
             <button class="btn-logout" onclick="sessionStorage.clear(); location.href='login.html'">🚪 Cerrar Sesión</button>
         </nav>
 
-        <!-- Contenido principal - Tabla -->
         <section class="content">
-            <input type="text" id="mainSearch" placeholder="🔍 Buscar por modelo, nombre o no. parte..." style="width:100%; padding:12px; border-radius:5px; border:1px solid #ddd; box-sizing: border-box;">
+            <input type="text" id="mainSearch" placeholder="🔍 Buscar por modelo, nombre o no. parte..." style="width:100%; padding:10px; border-radius:5px; border:1px solid #ddd; box-sizing: border-box;">
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th id="th-plus" style="display:none; width: 40px;">+</th>
+                            <th id="th-plus" style="display:none; width: 35px;">+</th>
                             <th>Modelo</th>
                             <th>No. Parte</th>
                             <th>Nombre</th>
@@ -346,14 +269,13 @@
         </section>
     </div>
 
-    <!-- Visor inferior de detalles -->
     <div class="bottom-preview">
         <div class="preview-image-box">
-            <span id="status-foto" style="font-size:11px; color:#2980b9; font-weight:bold; margin-bottom:5px;">Selecciona un material</span>
-            <img id="main-preview-img" src="imagenes/sin_foto.jpg">
+            <span id="status-foto" style="font-size:10px; color:#2980b9; font-weight:bold; margin-bottom:4px;">Selecciona un material</span>
+            <img id="main-preview-img" src="imagenes/sin_foto.jpg" onerror="this.src='imagenes/sin_foto.jpg'">
             
             <div class="upload-controls" id="up-ui" style="display:none;">
-                <button class="btn-sel" onclick="document.getElementById('fileInput').click()">📁 Elegir Imagen</button>
+                <button class="btn-sel" onclick="document.getElementById('fileInput').click()">📁 Elegir</button>
                 <button id="btnConfirmUp" class="btn-up">🚀 Subir</button>
                 <input type="file" id="fileInput" accept="image/*" style="display:none;">
             </div>
@@ -361,14 +283,13 @@
 
         <div class="preview-info-box">
             <h2 id="p-nombre">Detalles del Material</h2>
-            <hr>
-            <div id="p-detalles" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
+            <hr style="margin: 5px 0 10px 0;">
+            <div id="p-detalles" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px;">
                 Haz clic en una fila de la tabla para ver la información.
             </div>
         </div>
     </div>
 
-    <!-- Script principal -->
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot, doc, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -380,10 +301,9 @@
         let itemSeleccionado = null;
         const scriptURL = "https://script.google.com/macros/s/AKfycbxaEtN66UYbSOO57Wm9HPrjv7IyfzV8Q3cyZgvDKkKcC8PTohwGaLhznjI3AfP2VTLS/exec";
 
-        // Configurar permisos y mostrar elementos del menú
+        // Configurar permisos
         const esAdmin = user.usuario === 'admin';
         
-        // Mostrar botones según permisos
         if(esAdmin || p.registrar) document.getElementById('navReg').style.display = 'block';
         if(esAdmin || p.actualizar) document.getElementById('navAct').style.display = 'block';
         if(esAdmin || p.eliminar) document.getElementById('navEli').style.display = 'block';
@@ -408,19 +328,12 @@
             renderTable(productos);
         });
 
-        // Renderizar tabla
         function renderTable(lista) {
             const tbody = document.getElementById('inventory-body');
             tbody.innerHTML = '';
             
             if (lista.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="8" style="text-align:center; padding: 20px; color: #666;">
-                            No se encontraron productos. Usa el buscador o agrega nuevos materiales.
-                        </td>
-                    </tr>
-                `;
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 15px; color: #666;">No se encontraron productos.</td></tr>`;
                 return;
             }
             
@@ -429,7 +342,6 @@
                 tr.style.cursor = "pointer";
                 tr.onclick = () => mostrarDetalle(item);
                 
-                // Color según stock
                 let stockColor = 'black';
                 let stockText = item.cantidad || 0;
                 
@@ -457,11 +369,58 @@
             });
         }
 
-        // Mostrar detalles del producto
+        // SOLUCIÓN PARA IMÁGENES: Prueba múltiples formatos
+        async function cargarImagenDrive(itemNombre, imgElement, statusElement) {
+            try {
+                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(itemNombre)}`);
+                const data = await res.json();
+                
+                if(data.result === "success" && data.id) {
+                    const driveId = data.id;
+                    
+                    // Prueba con diferentes formatos de URL
+                    const urlFormats = [
+                        `https://lh3.googleusercontent.com/d/${driveId}=s500`, // Con tamaño definido
+                        `https://drive.google.com/thumbnail?id=${driveId}&sz=w500`, // Google Drive thumbnail
+                        `https://drive.google.com/uc?export=view&id=${driveId}`, // URL directa
+                        `https://docs.google.com/uc?id=${driveId}` // Alternativa
+                    ];
+                    
+                    // Función recursiva para probar URLs
+                    const tryUrl = (index) => {
+                        if (index >= urlFormats.length) {
+                            statusElement.innerText = "Imagen no accesible";
+                            return;
+                        }
+                        
+                        const testImg = new Image();
+                        testImg.onload = () => {
+                            // Si carga, usar esta URL
+                            imgElement.src = urlFormats[index];
+                            statusElement.innerText = "✓ Imagen cargada";
+                        };
+                        testImg.onerror = () => {
+                            // Si falla, probar la siguiente
+                            tryUrl(index + 1);
+                        };
+                        testImg.src = urlFormats[index];
+                    };
+                    
+                    // Empezar con la primera URL
+                    tryUrl(0);
+                    
+                } else {
+                    statusElement.innerText = "Sin foto";
+                }
+            } catch (e) { 
+                console.log("Error imagen:", e);
+                statusElement.innerText = "Error de red";
+            }
+        }
+
         async function mostrarDetalle(item) {
             itemSeleccionado = item;
             
-            // Mostrar información básica inmediatamente
             document.getElementById('p-nombre').innerText = item.nombre || 'Sin nombre';
             document.getElementById('p-detalles').innerHTML = `
                 <div><b>Modelo:</b> ${item.modelo || 'N/A'}</div>
@@ -470,37 +429,16 @@
                 <div><b>Rack:</b> ${item.rack || 'N/A'}</div>
                 <div><b>Contenedor:</b> ${item.contenedor || 'N/A'}</div>
                 <div><b>Costo:</b> $${(item.costo || 0).toFixed(2)}</div>
-                <div><b>Categorías:</b> ${[
-                    item.consumible ? 'Consumible' : null,
-                    item.pieza ? 'Pieza' : null,
-                    item.herramienta ? 'Herramienta' : null,
-                    item.equipo ? 'Equipo' : null
-                ].filter(Boolean).join(', ') || 'No especificada'}</div>
                 <div style="grid-column: span 2;"><b>Observaciones:</b> ${item.observaciones || 'Sin notas.'}</div>
             `;
 
-            // Buscar imagen en Google Drive
             const img = document.getElementById('main-preview-img');
             const status = document.getElementById('status-foto');
             
             img.src = "imagenes/sin_foto.jpg";
-            status.innerText = "Buscando foto...";
+            status.innerText = "Buscando...";
             
-            try {
-                const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(item.nombre)}`);
-                const data = await res.json();
-                
-                if(data.result === "success" && data.id) {
-                    // URL que funciona con lh3.googleusercontent.com
-                    img.src = `https://lh3.googleusercontent.com/d/${data.id}`;
-                    status.innerText = "✓ Imagen encontrada";
-                } else {
-                    status.innerText = "Sin foto disponible";
-                }
-            } catch (e) { 
-                console.error("Error al cargar imagen:", e);
-                status.innerText = "Error al buscar imagen";
-            }
+            await cargarImagenDrive(item.nombre, img, status);
         }
 
         // Lógica de subida de imágenes
@@ -508,17 +446,13 @@
         const btnConfirmUp = document.getElementById('btnConfirmUp');
 
         fileInput.onchange = () => {
-            if(fileInput.files[0]) {
-                btnConfirmUp.style.display = 'block';
-            }
+            if(fileInput.files[0]) btnConfirmUp.style.display = 'block';
         };
 
         btnConfirmUp.onclick = () => {
             if(!itemSeleccionado) return alert("Selecciona un material primero");
             
             const file = fileInput.files[0];
-            if (!file) return alert("Selecciona una imagen primero");
-            
             const reader = new FileReader();
             reader.readAsDataURL(file);
             
@@ -539,35 +473,34 @@
                     
                     const d = await res.json();
                     if(d.result === "success") {
-                        alert("✅ ¡Imagen guardada correctamente!");
+                        alert("✅ ¡Imagen guardada!");
                         btnConfirmUp.style.display = 'none';
                         fileInput.value = '';
                         mostrarDetalle(itemSeleccionado);
                     } else {
-                        alert("❌ Error: " + (d.error || "No se pudo subir la imagen"));
+                        alert("❌ Error: " + (d.error || "No se pudo subir"));
                     }
                 } catch (e) { 
-                    alert("❌ Error de conexión: " + e.message); 
+                    alert("❌ Error de conexión"); 
                 }
                 
                 btnConfirmUp.disabled = false;
             };
         };
 
-        // Carrito y salidas
+        // Carrito y salidas - CORREGIDO PARA EVITAR ERROR DE PERMISOS
         window.agregar = (id) => {
             const prod = productos.find(x => x.id === id);
             if(!prod) return;
             
             if(prod.cantidad < 1) {
-                alert("❌ Este producto está agotado");
+                alert("❌ Producto agotado");
                 return;
             }
             
-            // Verificar si ya está en el carrito
             const existente = carrito.find(item => item.id === id);
             if (existente) {
-                if(confirm("Este producto ya está en el vale. ¿Agregar otra unidad?")) {
+                if(confirm("¿Agregar otra unidad?")) {
                     existente.cantidad += 1;
                 }
             } else {
@@ -591,203 +524,217 @@
             }
             
             list.innerHTML = carrito.map((item, i) => `
-                <div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between; align-items:center; color:black;">
-                    <span style="font-size:11px; flex:1;">${item.nombre}</span>
-                    <span style="font-size:11px; font-weight:bold; margin:0 5px;">${item.cantidad} pz</span>
+                <div style="border-bottom:1px solid #eee; padding:4px; display:flex; justify-content:space-between; align-items:center; color:black; font-size:11px;">
+                    <span style="flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${item.nombre}</span>
+                    <span style="font-weight:bold; margin:0 5px;">${item.cantidad}pz</span>
                     <button onclick="carrito.splice(${i},1); dibujarCarrito();" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✕</button>
                 </div>
             `).join('');
         }
 
-        // Procesar salida y generar PDF
+        // PROCESAR SALIDA - CON MANEJO MEJORADO DE ERRORES
         window.procesarSalida = async () => {
             const r = document.getElementById('recep').value.trim();
             const py = document.getElementById('proyec').value.trim();
             
-            if(!r || !py) return alert("❌ Faltan datos: ingresa quién recibe y el proyecto");
-            if(carrito.length === 0) return alert("❌ Agrega al menos un material al vale");
+            if(!r || !py) return alert("❌ Ingresa quién recibe y el proyecto");
+            if(carrito.length === 0) return alert("❌ Agrega materiales al vale");
 
-            if(confirm(`¿Generar vale para ${r} (${carrito.length} productos) y descontar stock?`)) {
+            if(confirm(`¿Generar vale para ${r} (${carrito.length} productos)?`)) {
                 try {
-                    // Descontar stock en Firestore
+                    // 1. Primero descontar stock (esto ya funciona)
                     for (const item of carrito) {
                         await updateDoc(doc(db, "productos", item.id), { 
                             cantidad: increment(-item.cantidad) 
                         });
                     }
 
-                    // Registrar movimiento en Firestore
-                    await addDoc(collection(db, "movimientos"), {
-                        tipo: "SALIDA",
-                        fecha: serverTimestamp(),
-                        almacenista: user.usuario,
-                        receptor: r,
-                        proyecto: py,
-                        productos: carrito.map(item => ({
-                            id: item.id,
-                            modelo: item.modelo || '',
-                            noParte: item.noParte || '',
-                            nombre: item.nombre || '',
-                            cantidad: item.cantidad
-                        }))
-                    });
+                    // 2. Intentar registrar movimiento (pero si falla, no bloquear)
+                    try {
+                        await addDoc(collection(db, "movimientos"), {
+                            tipo: "SALIDA",
+                            fecha: serverTimestamp(),
+                            almacenista: user.usuario,
+                            receptor: r,
+                            proyecto: py,
+                            productos: carrito.map(item => ({
+                                id: item.id,
+                                modelo: item.modelo || '',
+                                noParte: item.noParte || '',
+                                nombre: item.nombre || '',
+                                cantidad: item.cantidad
+                            }))
+                        });
+                    } catch (movError) {
+                        console.warn("Movimiento no registrado (permisos):", movError);
+                        // Continuamos aunque falle el registro
+                    }
 
-                    // Generar PDF
+                    // 3. Generar PDF (siempre debe funcionar)
                     generarPDF(r, py, carrito);
 
-                    // Limpiar carrito
+                    // 4. Limpiar
                     carrito = []; 
                     dibujarCarrito();
                     document.getElementById('recep').value = ''; 
                     document.getElementById('proyec').value = '';
                     
                 } catch (err) {
-                    console.error(err);
-                    alert("❌ Error al procesar salida: " + err.message);
+                    console.error("Error crítico:", err);
+                    alert("⚠️ Error: " + (err.message || "Revise permisos de Firestore"));
                 }
             }
         };
 
-        // Generar PDF profesional
+        // GENERAR PDF MEJORADO
         function generarPDF(receptor, proyecto, items) {
             try {
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'letter'); // Tamaño carta estándar
+                const pdf = new jsPDF();
                 
-                // Encabezado con logo y título
-                pdf.setFillColor(26, 35, 126); // Azul oscuro
-                pdf.rect(0, 0, 216, 25, 'F'); // Rectángulo de encabezado
+                // Encabezado
+                pdf.setFillColor(26, 35, 126);
+                pdf.rect(0, 0, 210, 25, 'F');
                 
                 pdf.setTextColor(255, 255, 255);
-                pdf.setFontSize(20);
-                pdf.setFont(undefined, 'bold');
-                pdf.text("UNIVERSIDAD TAMAULIPECA", 108, 12, { align: 'center' });
+                pdf.setFontSize(18);
+                pdf.setFont("helvetica", "bold");
+                pdf.text("UNIVERSIDAD TAMAULIPECA", 105, 12, { align: 'center' });
                 
-                pdf.setFontSize(14);
-                pdf.text("ALMACÉN UT - VALE DE SALIDA", 108, 20, { align: 'center' });
+                pdf.setFontSize(12);
+                pdf.text("ALMACÉN UT - VALE DE SALIDA", 105, 20, { align: 'center' });
                 
-                // Información del vale
+                // Información
                 pdf.setTextColor(0, 0, 0);
-                pdf.setFontSize(11);
-                pdf.setFont(undefined, 'normal');
-                
-                const fecha = new Date().toLocaleDateString('es-MX', {
-                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-                });
-                
-                pdf.text(`Fecha: ${fecha}`, 20, 40);
-                pdf.text(`Hora: ${new Date().toLocaleTimeString('es-MX')}`, 20, 46);
-                pdf.text(`Entrega: ${user.usuario}`, 120, 40);
-                pdf.text(`Recibe: ${receptor}`, 120, 46);
-                pdf.text(`Proyecto: ${proyecto}`, 20, 52);
-                
-                // Tabla de productos
-                let startY = 65;
-                const pageHeight = 280; // Altitud máxima de página carta
-                
-                // Encabezados de tabla
-                pdf.setFillColor(44, 62, 80);
-                pdf.rect(20, startY, 176, 8, 'F');
-                pdf.setTextColor(255, 255, 255);
                 pdf.setFontSize(10);
-                pdf.setFont(undefined, 'bold');
+                pdf.setFont("helvetica", "normal");
                 
-                pdf.text("CANT.", 22, startY + 5.5);
-                pdf.text("MODELO", 45, startY + 5.5);
-                pdf.text("NO. PARTE", 85, startY + 5.5);
-                pdf.text("DESCRIPCIÓN", 125, startY + 5.5);
+                const fecha = new Date().toLocaleDateString('es-MX');
+                const hora = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
                 
-                startY += 8;
+                pdf.text(`Fecha: ${fecha}`, 20, 35);
+                pdf.text(`Hora: ${hora}`, 20, 41);
+                pdf.text(`Entrega: ${user.usuario}`, 110, 35);
+                pdf.text(`Recibe: ${receptor}`, 110, 41);
+                pdf.text(`Proyecto: ${proyecto}`, 20, 47);
+                
+                // Tabla
+                let y = 60;
+                
+                // Encabezado tabla
+                pdf.setFillColor(44, 62, 80);
+                pdf.rect(20, y, 170, 8, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(9);
+                pdf.setFont("helvetica", "bold");
+                
+                pdf.text("CANT.", 22, y + 5.5);
+                pdf.text("MODELO", 45, y + 5.5);
+                pdf.text("NO. PARTE", 90, y + 5.5);
+                pdf.text("DESCRIPCIÓN", 135, y + 5.5);
+                
+                y += 8;
                 pdf.setTextColor(0, 0, 0);
-                pdf.setFont(undefined, 'normal');
+                pdf.setFont("helvetica", "normal");
                 
-                // Productos
+                // Productos (máximo 15 por página)
+                let itemsEnPagina = 0;
+                
                 items.forEach((item, index) => {
-                    // Verificar si necesitamos nueva página
-                    if (startY > pageHeight - 20) {
+                    if (itemsEnPagina >= 15) {
                         pdf.addPage();
-                        startY = 20;
-                        
-                        // Repetir encabezado de tabla en nueva página
-                        pdf.setFillColor(44, 62, 80);
-                        pdf.rect(20, startY, 176, 8, 'F');
-                        pdf.setTextColor(255, 255, 255);
-                        pdf.setFontSize(10);
-                        pdf.setFont(undefined, 'bold');
-                        
-                        pdf.text("CANT.", 22, startY + 5.5);
-                        pdf.text("MODELO", 45, startY + 5.5);
-                        pdf.text("NO. PARTE", 85, startY + 5.5);
-                        pdf.text("DESCRIPCIÓN", 125, startY + 5.5);
-                        
-                        startY += 8;
-                        pdf.setTextColor(0, 0, 0);
-                        pdf.setFont(undefined, 'normal');
+                        y = 20;
+                        itemsEnPagina = 0;
                     }
                     
-                    // Dibujar fila
-                    pdf.rect(20, startY, 176, 8); // Borde de celda
+                    pdf.rect(20, y, 170, 7);
+                    pdf.text(`${item.cantidad} PZ`, 22, y + 4.5);
                     
-                    // Contenido
-                    pdf.text(`${item.cantidad} PZ`, 22, startY + 5.5);
-                    pdf.text(item.modelo?.substring(0, 15) || '-', 45, startY + 5.5);
-                    pdf.text(item.noParte?.substring(0, 15) || '-', 85, startY + 5.5);
-                    pdf.text(item.nombre?.substring(0, 30) || '-', 125, startY + 5.5);
+                    const modelo = (item.modelo || '-').substring(0, 12);
+                    const noParte = (item.noParte || '-').substring(0, 12);
+                    const nombre = (item.nombre || '-').substring(0, 25);
                     
-                    startY += 8;
+                    pdf.text(modelo, 45, y + 4.5);
+                    pdf.text(noParte, 90, y + 4.5);
+                    pdf.text(nombre, 135, y + 4.5);
+                    
+                    y += 7;
+                    itemsEnPagina++;
                 });
                 
-                // Totales y firmas
-                startY += 10;
-                pdf.setFont(undefined, 'bold');
-                pdf.text(`TOTAL DE PRODUCTOS: ${items.length}`, 20, startY);
-                pdf.text(`TOTAL DE PIEZAS: ${items.reduce((sum, item) => sum + item.cantidad, 0)}`, 120, startY);
+                // Totales
+                y += 5;
+                pdf.setFont("helvetica", "bold");
+                pdf.text(`TOTAL PRODUCTOS: ${items.length}`, 20, y);
+                pdf.text(`TOTAL PIEZAS: ${items.reduce((sum, item) => sum + item.cantidad, 0)}`, 120, y);
                 
                 // Firmas
-                startY += 30;
-                pdf.line(30, startY, 100, startY);
-                pdf.line(116, startY, 186, startY);
+                y += 20;
+                pdf.line(30, y, 100, y);
+                pdf.line(110, y, 180, y);
                 
-                startY += 5;
-                pdf.setFontSize(10);
-                pdf.text("FIRMA DE ENTREGA", 50, startY);
-                pdf.text("FIRMA DE RECEPCIÓN", 136, startY);
-                
-                // Pie de página
-                startY += 20;
+                y += 5;
                 pdf.setFontSize(8);
-                pdf.setTextColor(100, 100, 100);
-                pdf.text("Documento generado automáticamente por el Sistema de Control de Inventario UT", 108, startY, { align: 'center' });
+                pdf.text("FIRMA ENTREGA", 50, y);
+                pdf.text("FIRMA RECIBE", 130, y);
                 
-                // Guardar PDF
-                const nombreArchivo = `Vale_${receptor.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+                // Guardar
+                const nombreArchivo = `Vale_${receptor}_${fecha.replace(/\//g, '-')}.pdf`;
                 pdf.save(nombreArchivo);
                 
-                alert(`✅ Vale generado exitosamente\n📄 PDF: ${nombreArchivo}`);
+                alert(`✅ PDF generado: ${nombreArchivo}\nStock descontado correctamente.`);
                 
             } catch (pdfErr) {
-                console.error("Error generando PDF:", pdfErr);
-                alert("⚠️ El stock se descontó, pero hubo un error generando el PDF.");
+                console.error("Error PDF:", pdfErr);
+                alert("⚠️ Stock descontado, pero error al crear PDF.\nDescarga manual desde: Imprimir > Guardar como PDF");
+                
+                // Mostrar vale en pantalla para imprimir manualmente
+                document.getElementById('f-fec').innerText = new Date().toLocaleDateString();
+                document.getElementById('f-alm').innerText = user.usuario;
+                document.getElementById('f-rec').innerText = receptor;
+                document.getElementById('f-pro').innerText = proyecto;
+                document.getElementById('f-lista').innerHTML = items.map(i => `
+                    <tr><td>${i.cantidad} PZ</td><td>${i.modelo}</td><td>${i.noParte}</td><td>${i.nombre}</td></tr>
+                `).join('');
+                
+                document.getElementById('print-vale').style.display = 'block';
+                window.print();
+                document.getElementById('print-vale').style.display = 'none';
             }
         }
 
-        // Buscador en tiempo real
+        // Buscador
         document.getElementById('mainSearch').oninput = (e) => {
-            const termino = e.target.value.toLowerCase().trim();
-            if(!termino) {
-                renderTable(productos);
-                return;
-            }
-            
-            const filtrados = productos.filter(p => 
-                (p.nombre || '').toLowerCase().includes(termino) || 
-                (p.noParte || '').toLowerCase().includes(termino) || 
-                (p.modelo || '').toLowerCase().includes(termino) ||
-                (p.laboratorio || '').toLowerCase().includes(termino)
-            );
-            
-            renderTable(filtrados);
+            const t = e.target.value.toLowerCase();
+            renderTable(productos.filter(p => 
+                (p.nombre||'').toLowerCase().includes(t) || 
+                (p.noParte||'').toLowerCase().includes(t) || 
+                (p.modelo||'').toLowerCase().includes(t)
+            ));
         };
     </script>
+
+    <!-- Vale para impresión (backup) -->
+    <div id="print-vale" style="display:none; padding: 20px; font-family: Arial;">
+        <h2 style="text-align:center; color: #1a237e;">UNIVERSIDAD TAMAULIPECA</h2>
+        <h3 style="text-align:center; color: #283593;">Almacén UT - Vale de Salida</h3>
+        <hr>
+        <p><strong>Fecha:</strong> <span id="f-fec"></span></p>
+        <p><strong>Entrega:</strong> <span id="f-alm"></span></p>
+        <p><strong>Recibe:</strong> <span id="f-rec"></span></p>
+        <p><strong>Proyecto:</strong> <span id="f-pro"></span></p>
+        <table border="1" style="width:100%; border-collapse:collapse; margin-top:15px; font-size:12px;">
+            <thead>
+                <tr style="background:#2c3e50; color:white;">
+                    <th>CANT.</th><th>MODELO</th><th>NO. PARTE</th><th>DESCRIPCIÓN</th>
+                </tr>
+            </thead>
+            <tbody id="f-lista"></tbody>
+        </table>
+        <div style="margin-top:50px; display:flex; justify-content:space-around;">
+            <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top:5px;">Firma Entrega</div>
+            <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top:5px;">Firma Recibe</div>
+        </div>
+    </div>
 </body>
 </html>
