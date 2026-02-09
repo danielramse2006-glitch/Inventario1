@@ -57,40 +57,11 @@
             border-right: 1px solid #eee;
             padding-right: 20px;
         }
-        
-        /* CORREGIDO: Mejor manejo de imagen */
-        #img-container {
-            position: relative;
-            width: 100%;
-            height: 150px;
-            margin-bottom: 10px;
-        }
-        
         #main-preview-img { 
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+            max-width: 100%; 
+            max-height: 150px; 
             object-fit: contain; 
-            border-radius: 5px;
-            z-index: 2;
-        }
-        
-        .img-placeholder {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #ecf0f1;
-            border-radius: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #95a5a6;
-            font-size: 48px;
-            z-index: 1;
+            border-radius: 5px; 
         }
 
         .upload-controls { 
@@ -98,12 +69,9 @@
             display: flex; 
             gap: 8px; 
             justify-content: center; 
-            z-index: 3;
-            position: relative;
         }
-        
         .btn-sel { 
-            background: #7f8c8d; 
+            background: #3498db; 
             color: white; 
             border: none; 
             padding: 6px 12px; 
@@ -112,7 +80,6 @@
             font-size: 12px; 
             font-weight: bold; 
         }
-        
         .btn-up { 
             background: #27ae60; 
             color: white; 
@@ -122,8 +89,8 @@
             cursor: pointer; 
             font-size: 12px; 
             font-weight: bold; 
+            display: none; 
         }
-        
         .btn-up:hover { background: #2ecc71; }
 
         .preview-info-box { flex: 1; overflow-y: auto; height: 100%; }
@@ -131,7 +98,23 @@
 
         .cart-box { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-top: 15px; color: black; }
         
-        /* Resto del CSS se mantiene igual */
+        .side-menu button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            text-align: left;
+            margin-bottom: 5px;
+            transition: background 0.3s;
+        }
+        
+        .side-menu button:hover {
+            background: #2980b9;
+        }
+        
         @media print {
             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
             @page { margin: 1.5cm; size: letter portrait; }
@@ -209,11 +192,11 @@
             <button id="navReg" style="display:none;" onclick="location.href='registro.html'">✏️ Registrar</button>
             <button id="navAct" style="display:none;" onclick="location.href='actualizar.html'">🔄 Actualizar</button>
             <button id="navEli" style="display:none;" onclick="location.href='eliminar.html'">🗑️ Eliminar</button>
-            <button id="navDev" style="display:none; background:#3498db; color:white;" onclick="location.href='devolver.html'">↩️ Devolver</button>
-            <button id="navImp" style="display:none; background:#8e44ad; color:white;" onclick="location.href='inmporta.html'">📥 Importar</button>
-            <button id="navMov" style="display:none; background:#9b59b6; color:white;" onclick="location.href='movimientos.html'">📋 Movimientos</button>
-            <button id="navExp" style="display:none; background:#16a085; color:white;" onclick="location.href='exportar.html'">📊 Exportar Excel</button>
-            <button id="navAdm" style="display:none; background:#f1c40f;" onclick="location.href='usuarios.html'">👥 Usuarios</button>
+            <button id="navDev" style="display:none;" onclick="location.href='devolver.html'">↩️ Devolver</button>
+            <button id="navImp" style="display:none;" onclick="location.href='importar.html'">📥 Importar</button>
+            <button id="navMov" style="display:none;" onclick="location.href='movimientos.html'">📋 Movimientos</button>
+            <button id="navExp" style="display:none;" onclick="location.href='exportar.html'">📊 Exportar Excel</button>
+            <button id="navAdm" style="display:none;" onclick="location.href='usuarios.html'">👥 Usuarios</button>
             
             <div id="cart-box" class="cart-box" style="display:none;">
                 <h4 style="margin:0; text-align:center;">📋 VALE DE SALIDA</h4>
@@ -244,17 +227,11 @@
     <div class="bottom-preview">
         <div class="preview-image-box">
             <span id="status-foto" style="font-size:11px; color:#2980b9; font-weight:bold; margin-bottom:5px;">Selecciona un material</span>
+            <img id="main-preview-img" src="imagenes/sin_foto.jpg" alt="Imagen del producto">
             
-            <!-- CORREGIDO: Contenedor de imagen mejorado -->
-            <div id="img-container">
-                <div class="img-placeholder">📦</div>
-                <img id="main-preview-img" alt="Imagen del producto" style="display: none;">
-            </div>
-            
-            <!-- CORREGIDO: Controles de subida siempre visibles si hay permisos -->
             <div class="upload-controls" id="up-ui" style="display:none;">
                 <button class="btn-sel" onclick="document.getElementById('fileInput').click()">📁 Elegir</button>
-                <button id="btnConfirmUp" class="btn-up" style="display:none;">🚀 Subir</button>
+                <button id="btnConfirmUp" class="btn-up">🚀 Subir</button>
                 <input type="file" id="fileInput" accept="image/*" style="display:none;">
             </div>
         </div>
@@ -302,7 +279,7 @@
 
         const esAdmin = user.usuario === 'admin';
         
-        // PERMISOS DE BOTONES
+        // PERMISOS DE BOTONES - TODOS EN AZUL
         if(esAdmin || p.registrar) document.getElementById('navReg').style.display = 'block';
         if(esAdmin || p.actualizar) document.getElementById('navAct').style.display = 'block';
         if(esAdmin || p.eliminar) document.getElementById('navEli').style.display = 'block';
@@ -348,7 +325,7 @@
             });
         }
 
-        // CORREGIDO: Función mejorada para mostrar detalles e imagen
+        // FUNCIÓN CORREGIDA - IGUAL QUE EL CÓDIGO ANTERIOR QUE FUNCIONABA
         async function mostrarDetalle(item) {
             itemSeleccionado = item;
             document.getElementById('p-nombre').innerText = item.nombre;
@@ -363,13 +340,7 @@
             `;
 
             const img = document.getElementById('main-preview-img');
-            const placeholder = document.querySelector('.img-placeholder');
             const status = document.getElementById('status-foto');
-            
-            // Resetear visualización
-            img.style.display = 'none';
-            placeholder.style.display = 'flex';
-            placeholder.innerHTML = '🔍';
             status.innerText = "Buscando foto...";
             
             try {
@@ -377,79 +348,35 @@
                 const data = await res.json();
                 
                 if(data.result === "success" && data.id) {
-                    const imgUrl = `https://lh3.googleusercontent.com/d/${data.id}`;
-                    
-                    // Cargar imagen con manejo de errores
-                    img.onload = () => {
-                        img.style.display = 'block';
-                        placeholder.style.display = 'none';
-                        status.innerText = "✓ Imagen cargada";
-                    };
-                    
-                    img.onerror = () => {
-                        img.style.display = 'none';
-                        placeholder.style.display = 'flex';
-                        placeholder.innerHTML = '❌';
-                        status.innerText = "Error al cargar imagen";
-                    };
-                    
-                    img.src = imgUrl;
+                    img.src = `https://lh3.googleusercontent.com/d/${data.id}`;
+                    status.innerText = "✓ Encontrada en Drive";
                 } else {
-                    placeholder.innerHTML = '📷';
-                    placeholder.style.display = 'flex';
-                    img.style.display = 'none';
-                    status.innerText = "Sin foto disponible";
+                    img.src = "imagenes/sin_foto.jpg";
+                    status.innerText = "Sin foto";
                 }
             } catch (e) { 
-                console.error("Error al buscar imagen:", e);
-                placeholder.innerHTML = '🌐';
-                placeholder.style.display = 'flex';
-                img.style.display = 'none';
-                status.innerText = "Error de conexión"; 
+                status.innerText = "Error de red";
+                img.src = "imagenes/sin_foto.jpg";
             }
         }
 
-        // CORREGIDO: Lógica de subida de imágenes
+        // LÓGICA DE SUBIDA - IGUAL QUE EL CÓDIGO ANTERIOR
         const fileInput = document.getElementById('fileInput');
         const btnConfirmUp = document.getElementById('btnConfirmUp');
 
         fileInput.onchange = () => {
-            if(fileInput.files[0]) {
-                btnConfirmUp.style.display = 'block';
-                
-                // Vista previa inmediata
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const img = document.getElementById('main-preview-img');
-                    const placeholder = document.querySelector('.img-placeholder');
-                    img.src = e.target.result;
-                    img.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    document.getElementById('status-foto').innerText = "Vista previa - Listo para subir";
-                };
-                reader.readAsDataURL(fileInput.files[0]);
-            }
+            if(fileInput.files[0]) btnConfirmUp.style.display = 'block';
         };
 
-        btnConfirmUp.onclick = async () => {
-            if(!itemSeleccionado) {
-                alert("Selecciona un material primero");
-                return;
-            }
-            
+        btnConfirmUp.onclick = () => {
+            if(!itemSeleccionado) return alert("Selecciona un material");
             const file = fileInput.files[0];
-            if(!file) {
-                alert("Selecciona una imagen primero");
-                return;
-            }
-
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = async () => {
-                document.getElementById('status-foto').innerText = "Subiendo...";
+                document.getElementById('status-foto').innerText = "SUBIENDO...";
                 btnConfirmUp.disabled = true;
                 const base64Data = reader.result.split(',')[1];
-                
                 try {
                     const res = await fetch(scriptURL, {
                         method: "POST",
@@ -461,17 +388,15 @@
                     });
                     const d = await res.json();
                     if(d.result === "success") {
-                        alert("✅ ¡Imagen guardada correctamente!");
+                        alert("¡Imagen guardada!");
                         btnConfirmUp.style.display = 'none';
                         fileInput.value = '';
-                        
-                        // Recargar la imagen
                         mostrarDetalle(itemSeleccionado);
                     } else {
-                        alert("❌ Error: " + (d.error || "Desconocido"));
+                        alert("Error: " + d.error);
                     }
                 } catch (e) { 
-                    alert("❌ Error de conexión: " + e.message); 
+                    alert("Error al subir: " + e.message); 
                 }
                 btnConfirmUp.disabled = false;
             };
@@ -479,20 +404,14 @@
 
         window.agregar = (id) => {
             const prod = productos.find(x => x.id === id);
-            if(prod.cantidad < 1) {
-                alert("❌ Sin stock disponible");
-                return;
-            }
+            if(prod.cantidad < 1) return alert("Sin stock");
             carrito.push(prod);
             dibujarCarrito();
         };
 
         function dibujarCarrito() {
             const list = document.getElementById('cart-list');
-            if(carrito.length === 0) { 
-                list.innerHTML = "<i>Vacío</i>"; 
-                return; 
-            }
+            if(carrito.length === 0) { list.innerHTML = "<i>Vacío</i>"; return; }
             list.innerHTML = carrito.map((item, i) => `
                 <div style="border-bottom:1px solid #eee; padding:3px; display:flex; justify-content:space-between; align-items:center; color:black;">
                     <span style="font-size:11px;">${item.nombre}</span>
@@ -504,16 +423,7 @@
         window.procesarSalida = async () => {
             const receptor = document.getElementById('recep').value.trim();
             const proyecto = document.getElementById('proyec').value.trim();
-            
-            if(!receptor || !proyecto) {
-                alert("❌ Completa todos los datos del vale");
-                return;
-            }
-            
-            if(carrito.length === 0) {
-                alert("❌ Agrega al menos un producto al vale");
-                return;
-            }
+            if(!receptor || !proyecto || carrito.length === 0) return alert("Completa todos los datos del vale");
 
             if(confirm("¿Generar vale y descontar del inventario?")) {
                 const fechaHora = new Date();
@@ -521,7 +431,6 @@
                 document.getElementById('f-alm').innerText = user.usuario;
                 document.getElementById('f-rec').innerText = receptor;
                 document.getElementById('f-pro').innerText = proyecto;
-                
                 document.getElementById('f-lista').innerHTML = carrito.map(i => `
                     <tr>
                         <td style="text-align:center;">1 PZ</td>
@@ -531,40 +440,33 @@
                     </tr>
                 `).join('');
 
-                // GUARDAR EN FIRESTORE
-                try {
-                    await addDoc(collection(db, "movimientos"), {
-                        tipo: "SALIDA",
-                        fecha: serverTimestamp(),
-                        receptor: receptor,
-                        proyecto: proyecto,
-                        almacenista: user.usuario,
-                        productos: carrito.map(item => ({
-                            id: item.id,
-                            modelo: item.modelo || '',
-                            noParte: item.noParte || '',
-                            nombre: item.nombre || '',
-                            cantidad: 1
-                        }))
-                    });
+                // GUARDAR EN FIRESTORE (COLECCIÓN "movimientos")
+                await addDoc(collection(db, "movimientos"), {
+                    tipo: "SALIDA",
+                    fecha: serverTimestamp(),
+                    receptor: receptor,
+                    proyecto: proyecto,
+                    almacenista: user.usuario,
+                    productos: carrito.map(item => ({
+                        id: item.id,
+                        modelo: item.modelo || '',
+                        noParte: item.noParte || '',
+                        nombre: item.nombre || '',
+                        cantidad: 1
+                    }))
+                });
 
-                    // DESCONTAR STOCK
-                    for (const item of carrito) {
-                        await updateDoc(doc(db, "productos", item.id), { 
-                            cantidad: increment(-1) 
-                        });
-                    }
-
-                    window.print();
-                    carrito = [];
-                    dibujarCarrito();
-                    document.getElementById('recep').value = '';
-                    document.getElementById('proyec').value = '';
-                    alert("✅ Vale generado y movimiento registrado");
-                    
-                } catch (error) {
-                    alert("❌ Error al guardar: " + error.message);
+                // DESCONTAR STOCK
+                for (const item of carrito) {
+                    await updateDoc(doc(db, "productos", item.id), { cantidad: increment(-1) });
                 }
+
+                window.print();
+                carrito = [];
+                dibujarCarrito();
+                document.getElementById('recep').value = '';
+                document.getElementById('proyec').value = '';
+                alert("✅ Vale generado y movimiento registrado");
             }
         };
 
