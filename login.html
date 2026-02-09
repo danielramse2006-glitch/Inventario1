@@ -16,30 +16,37 @@
         import { collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         document.getElementById('btnLogin').onclick = async () => {
-            const u = document.getElementById('user').value.trim();
-            const p = document.getElementById('pass').value.trim();
+            const u = document.getElementById('user').value; // Sin trim para respetar espacios si los hubiera
+            const p = document.getElementById('pass').value;
 
+            // CASO: ADMIN MAESTRO
             if (u === "admin" && p === "#Reyn0sa#") {
-                // REGISTRAR ACCESO DE ADMIN
+                const adminData = { 
+                    usuario: 'admin',
+                    permisos: {
+                        registrar: true, actualizar: true, eliminar: true, 
+                        salidas: true, subirImagenes: true
+                    }
+                };
+                
                 await addDoc(collection(db, "movimientos"), {
                     tipo: "ACCESO",
                     fecha: serverTimestamp(),
                     usuario: 'admin',
-                    descripcion: "Inicio de sesión exitoso"
+                    descripcion: "Inicio de sesión Admin Maestro"
                 });
                 
-                sessionStorage.setItem("currentUser", JSON.stringify({ usuario: 'admin' }));
+                sessionStorage.setItem("currentUser", JSON.stringify(adminData));
                 window.location.href = "index.html";
                 return;
             }
             
+            // CASO: USUARIOS NORMALES
             const q = query(collection(db, "usuarios"), where("usuario", "==", u), where("password", "==", p));
             const snap = await getDocs(q);
             
             if (!snap.empty) {
                 const userData = snap.docs[0].data();
-                
-                // REGISTRAR ACCESO DE USUARIO
                 await addDoc(collection(db, "movimientos"), {
                     tipo: "ACCESO",
                     fecha: serverTimestamp(),
@@ -50,14 +57,6 @@
                 sessionStorage.setItem("currentUser", JSON.stringify(userData));
                 window.location.href = "index.html";
             } else { 
-                // REGISTRAR INTENTO FALLIDO
-                await addDoc(collection(db, "movimientos"), {
-                    tipo: "ACCESO_FALLIDO",
-                    fecha: serverTimestamp(),
-                    usuario: u,
-                    descripcion: "Intento de acceso fallido"
-                });
-                
                 alert("Usuario o contraseña incorrectos"); 
             }
         }
