@@ -7,16 +7,46 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         /* Bloqueo de scroll general para scroll interno en tabla */
-        body, html { height: 100%; margin: 0; overflow: hidden; background-color: #0080ff; font-family: sans-serif; }
+        body, html { 
+            height: 100%; 
+            margin: 0; 
+            overflow: hidden; 
+            background-color: #0080ff; 
+            font-family: sans-serif; 
+        }
+        
+        /* Encabezado principal */
+        .header-container {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .main-title {
+            font-size: 28px;
+            margin: 0;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .sub-title {
+            font-size: 18px;
+            margin: 5px 0 0 0;
+            font-weight: normal;
+            color: #bbdefb;
+        }
         
         .main-container { 
             display: flex; 
-            height: calc(100vh - 250px); 
+            height: calc(100vh - 180px); /* Ajustado por nuevo header */
             padding: 15px; 
             gap: 15px; 
             box-sizing: border-box;
         }
 
+        /* Tabla con scroll independiente */
         .content { 
             flex: 1; 
             display: flex; 
@@ -27,11 +57,25 @@
             overflow: hidden; 
             box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
         }
-        .table-wrapper { flex: 1; overflow-y: auto; border: 1px solid #ddd; }
         
+        .table-wrapper { 
+            flex: 1; 
+            overflow-y: auto; 
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        /* Forzar texto negro en tabla y visor */
         table, .bottom-preview { color: black !important; }
-        th { color: white !important; background-color: #2c3e50; }
+        th { 
+            color: white !important; 
+            background-color: #2c3e50; 
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
 
+        /* --- VISOR INFERIOR FIJO --- */
         .bottom-preview {
             position: fixed;
             bottom: 0;
@@ -59,56 +103,241 @@
             border-right: 1px solid #eee;
             padding-right: 20px;
         }
-        #main-preview-img { max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 5px; }
+        
+        #main-preview-img { 
+            max-width: 100%; 
+            max-height: 150px; 
+            object-fit: contain; 
+            border-radius: 5px; 
+            border: 1px solid #ddd;
+        }
 
-        .upload-controls { margin-top: 10px; display: flex; gap: 8px; justify-content: center; }
-        .btn-sel { background: #7f8c8d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-up { background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none; }
+        /* Lógica de botones de subida */
+        .upload-controls { 
+            margin-top: 10px; 
+            display: flex; 
+            gap: 8px; 
+            justify-content: center; 
+        }
+        
+        .btn-sel { 
+            background: #7f8c8d; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold; 
+        }
+        
+        .btn-up { 
+            background: #27ae60; 
+            color: white; 
+            border: none; 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            font-size: 12px; 
+            font-weight: bold; 
+            display: none; 
+        }
+        
         .btn-up:hover { background: #2ecc71; }
 
-        .preview-info-box { flex: 1; overflow-y: auto; height: 100%; }
-        .preview-info-box h2 { margin-top: 0; color: #2c3e50; }
-
-        .cart-box { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-top: 15px; color: black; }
+        .preview-info-box { 
+            flex: 1; 
+            overflow-y: auto; 
+            height: 100%; 
+        }
         
-        @media print {
-            .bottom-preview, .side-menu, #mainSearch, header { display: none !important; }
-            #print-vale { display: block !important; position: absolute; top: 0; left: 0; width: 100%; color: black; }
+        .preview-info-box h2 { 
+            margin-top: 0; 
+            color: #2c3e50; 
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+        }
+
+        .cart-box { 
+            background: #fff; 
+            padding: 10px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            margin-top: 15px; 
+            color: black; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Botón de agregar a carrito */
+        .btn-add-item {
+            background: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-add-item:hover {
+            background: #2ecc71;
+            transform: scale(1.1);
+        }
+        
+        /* Estilos para el menú lateral */
+        .side-menu {
+            width: 220px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .side-menu button {
+            padding: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            color: #2c3e50;
+            text-align: left;
+        }
+        
+        .side-menu button:hover {
+            background: #e9ecef;
+            transform: translateX(3px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .btn-logout {
+            background: #c0392b; 
+            color: white; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            margin-top: auto;
+            font-weight: bold;
+        }
+        
+        .btn-logout:hover {
+            background: #e74c3c;
+        }
+        
+        /* Buscador */
+        #mainSearch {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 6px;
+            border: 2px solid #ddd;
+            box-sizing: border-box;
+            font-size: 14px;
+            margin-bottom: 15px;
+            transition: border 0.3s;
+        }
+        
+        #mainSearch:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        /* Estilos para tabla */
+        #inventory-body tr {
+            transition: background-color 0.2s;
+        }
+        
+        #inventory-body tr:hover {
+            background-color: #e3f2fd !important;
+            cursor: pointer;
+        }
+        
+        #inventory-body tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .main-container {
+                flex-direction: column;
+                height: calc(100vh - 300px);
+            }
+            
+            .side-menu {
+                width: 100%;
+                flex-direction: row;
+                flex-wrap: wrap;
+            }
+            
+            .side-menu button {
+                flex: 1;
+                min-width: 120px;
+            }
+            
+            .bottom-preview {
+                height: 200px;
+                padding: 10px 20px;
+            }
+            
+            .preview-image-box {
+                flex: 0 0 180px;
+            }
         }
     </style>
 </head>
 <body class="bg-blue">
-    <header><h1 style="color: white; margin: 10px 0; text-align: center;">Control de Inventario</h1></header>
+    <!-- Encabezado con Universidad Tamaulipeca -->
+    <div class="header-container">
+        <h1 class="main-title">Universidad Tamaulipeca</h1>
+        <h2 class="sub-title">Almacén UT - Sistema de Control de Inventario</h2>
+    </div>
     
     <div class="main-container">
-        <nav class="side-menu" style="width: 200px; display: flex; flex-direction: column; gap: 10px;">
-            <button id="navReg" style="display:none;" onclick="location.href='registro.html'">Registrar</button>
-            <button id="navAct" style="display:none;" onclick="location.href='actualizar.html'">Actualizar</button>
-            <button id="navEli" style="display:none;" onclick="location.href='eliminar.html'">Eliminar</button>
-            <button id="navDev" style="display:none;" onclick="location.href='devolver.html'">Devolver</button>
-            <button id="navImp" style="display:none;" onclick="location.href='importar.html'">Importar</button>
-            <button id="navMov" style="display:none;" onclick="location.href='movimientos.html'">Movimientos</button>
-            <button id="navExp" style="display:none;" onclick="location.href='exportar.html'">Exportar</button>
-            <button id="navAdm" style="display:none; background:#f1c40f;" onclick="location.href='usuarios.html'">Usuarios</button>
+        <!-- Menú lateral -->
+        <nav class="side-menu">
+            <button id="navReg" style="display:none;" onclick="location.href='registro.html'">📝 Registrar Material</button>
+            <button id="navAct" style="display:none;" onclick="location.href='actualizar.html'">✏️ Actualizar</button>
+            <button id="navEli" style="display:none;" onclick="location.href='eliminar.html'">🗑️ Eliminar</button>
+            <button id="navDev" style="display:none;" onclick="location.href='devolver.html'">↩️ Devolver</button>
+            <button id="navImp" style="display:none;" onclick="location.href='importar.html'">📤 Importar</button>
+            <button id="navMov" style="display:none;" onclick="location.href='movimientos.html'">📋 Movimientos</button>
+            <button id="navExp" style="display:none;" onclick="location.href='exportar.html'">📊 Exportar</button>
+            <button id="navAdm" style="display:none; background:#f1c40f;" onclick="location.href='usuarios.html'">👥 Usuarios</button>
             
+            <!-- Carrito para salidas -->
             <div id="cart-box" class="cart-box" style="display:none;">
-                <h4 style="margin:0; text-align:center;">📋 VALE</h4>
-                <div id="cart-list" style="margin: 10px 0; font-size: 0.8em; max-height: 80px; overflow-y:auto;"><i>Vacío</i></div>
-                <input type="text" id="recep" placeholder="¿Quién recibe?" style="width:90%; margin-bottom: 5px;">
-                <input type="text" id="proyec" placeholder="Proyecto" style="width:90%;">
-                <button onclick="procesarSalida()" style="width:100%; background:#e67e22; color:white; border:none; padding:8px; margin-top:5px; cursor:pointer; font-weight:bold;">GENERAR VALE</button>
+                <h4 style="margin:0; text-align:center; color:#2c3e50;">📋 VALE DE SALIDA</h4>
+                <div id="cart-list" style="margin: 10px 0; font-size: 0.8em; max-height: 80px; overflow-y:auto;"><i>Vacío - Agrega materiales con el botón +</i></div>
+                <input type="text" id="recep" placeholder="¿Quién recibe?" style="width:100%; padding:8px; margin:5px 0; border:1px solid #ddd; border-radius:4px;">
+                <input type="text" id="proyec" placeholder="Proyecto" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:4px;">
+                <button onclick="procesarSalida()" style="width:100%; background:#e67e22; color:white; border:none; padding:10px; margin-top:8px; cursor:pointer; font-weight:bold; border-radius:4px;">
+                    📄 GENERAR VALE PDF
+                </button>
             </div>
-            <button class="btn-logout" style="background:#c0392b; color:white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: auto;" onclick="sessionStorage.clear(); location.href='login.html'">Cerrar Sesión</button>
+            
+            <button class="btn-logout" onclick="sessionStorage.clear(); location.href='login.html'">🚪 Cerrar Sesión</button>
         </nav>
 
+        <!-- Contenido principal - Tabla -->
         <section class="content">
             <input type="text" id="mainSearch" placeholder="🔍 Buscar por modelo, nombre o no. parte..." style="width:100%; padding:12px; border-radius:5px; border:1px solid #ddd; box-sizing: border-box;">
             <div class="table-wrapper">
                 <table>
                     <thead>
                         <tr>
-                            <th id="th-plus" style="display:none;">+</th>
-                            <th>Modelo</th><th>No. Parte</th><th>Nombre</th><th>Stock</th><th>Laboratorio</th><th>Rack</th><th>Contenedor</th>
+                            <th id="th-plus" style="display:none; width: 40px;">+</th>
+                            <th>Modelo</th>
+                            <th>No. Parte</th>
+                            <th>Nombre</th>
+                            <th>Stock</th>
+                            <th>Laboratorio</th>
+                            <th>Rack</th>
+                            <th>Contenedor</th>
                         </tr>
                     </thead>
                     <tbody id="inventory-body"></tbody>
@@ -117,13 +346,14 @@
         </section>
     </div>
 
+    <!-- Visor inferior de detalles -->
     <div class="bottom-preview">
         <div class="preview-image-box">
             <span id="status-foto" style="font-size:11px; color:#2980b9; font-weight:bold; margin-bottom:5px;">Selecciona un material</span>
             <img id="main-preview-img" src="imagenes/sin_foto.jpg">
             
             <div class="upload-controls" id="up-ui" style="display:none;">
-                <button class="btn-sel" onclick="document.getElementById('fileInput').click()">📁 Elegir</button>
+                <button class="btn-sel" onclick="document.getElementById('fileInput').click()">📁 Elegir Imagen</button>
                 <button id="btnConfirmUp" class="btn-up">🚀 Subir</button>
                 <input type="file" id="fileInput" accept="image/*" style="display:none;">
             </div>
@@ -133,21 +363,12 @@
             <h2 id="p-nombre">Detalles del Material</h2>
             <hr>
             <div id="p-detalles" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; font-size: 14px;">
-                Haz clic en una fila para ver la información.
+                Haz clic en una fila de la tabla para ver la información.
             </div>
         </div>
     </div>
 
-    <div id="print-vale" style="display:none; padding: 30px;">
-        <h2 style="text-align:center;">VALE DE SALIDA DE MATERIAL</h2>
-        <p><strong>Fecha:</strong> <span id="f-fec"></span> | <strong>Entrega:</strong> <span id="f-alm"></span></p>
-        <p><strong>Recibe:</strong> <span id="f-rec"></span> | <strong>Proyecto:</strong> <span id="f-pro"></span></p>
-        <table border="1" style="width:100%; border-collapse:collapse; margin-top: 20px;">
-            <thead><tr><th>CANT.</th><th>MODELO</th><th>NO. PARTE</th><th>DESCRIPCIÓN</th></tr></thead>
-            <tbody id="f-lista"></tbody>
-        </table>
-    </div>
-
+    <!-- Script principal -->
     <script type="module">
         import { db, checkAuth } from './config.js';
         import { collection, onSnapshot, doc, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -159,8 +380,10 @@
         let itemSeleccionado = null;
         const scriptURL = "https://script.google.com/macros/s/AKfycbxaEtN66UYbSOO57Wm9HPrjv7IyfzV8Q3cyZgvDKkKcC8PTohwGaLhznjI3AfP2VTLS/exec";
 
-        // Permisos y UI
+        // Configurar permisos y mostrar elementos del menú
         const esAdmin = user.usuario === 'admin';
+        
+        // Mostrar botones según permisos
         if(esAdmin || p.registrar) document.getElementById('navReg').style.display = 'block';
         if(esAdmin || p.actualizar) document.getElementById('navAct').style.display = 'block';
         if(esAdmin || p.eliminar) document.getElementById('navEli').style.display = 'block';
@@ -178,28 +401,54 @@
             document.getElementById('th-plus').style.display = 'table-cell';
         }
 
-        // Firestore Realtime
+        // Firestore en tiempo real
         onSnapshot(collection(db, "productos"), (snap) => {
             productos = [];
             snap.forEach(d => productos.push({...d.data(), id: d.id}));
             renderTable(productos);
         });
 
+        // Renderizar tabla
         function renderTable(lista) {
             const tbody = document.getElementById('inventory-body');
             tbody.innerHTML = '';
+            
+            if (lista.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" style="text-align:center; padding: 20px; color: #666;">
+                            No se encontraron productos. Usa el buscador o agrega nuevos materiales.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
             lista.forEach(item => {
                 const tr = document.createElement('tr');
                 tr.style.cursor = "pointer";
-                tr.onclick = () => mostrarDetalle(item); // Esto debe funcionar siempre
+                tr.onclick = () => mostrarDetalle(item);
+                
+                // Color según stock
+                let stockColor = 'black';
+                let stockText = item.cantidad || 0;
+                
+                if (item.cantidad < 1) {
+                    stockColor = '#e74c3c';
+                    stockText = 'AGOTADO';
+                } else if (item.cantidad < 3) {
+                    stockColor = '#e67e22';
+                    stockText = `${item.cantidad} (BAJO)`;
+                }
+                
                 tr.innerHTML = `
-                    <td style="display:${(esAdmin || p.salidas) ? 'table-cell' : 'none'}">
+                    <td style="display:${(esAdmin || p.salidas) ? 'table-cell' : 'none'}; text-align:center;">
                         <button class="btn-add-item" onclick="event.stopPropagation(); agregar('${item.id}')">+</button>
                     </td>
                     <td>${item.modelo || '-'}</td>
                     <td style="font-weight:bold;">${item.noParte || '-'}</td>
                     <td>${item.nombre || '-'}</td>
-                    <td style="text-align:center; font-weight:bold; color:${item.cantidad < 3 ? 'red' : 'black'};">${item.cantidad || 0}</td>
+                    <td style="text-align:center; font-weight:bold; color:${stockColor};">${stockText}</td>
                     <td>${item.laboratorio || '-'}</td>
                     <td>${item.rack || '-'}</td>
                     <td>${item.contenedor || '-'}</td>
@@ -208,9 +457,11 @@
             });
         }
 
+        // Mostrar detalles del producto
         async function mostrarDetalle(item) {
             itemSeleccionado = item;
-            // Primero mostramos la información de texto (esto es instantáneo)
+            
+            // Mostrar información básica inmediatamente
             document.getElementById('p-nombre').innerText = item.nombre || 'Sin nombre';
             document.getElementById('p-detalles').innerHTML = `
                 <div><b>Modelo:</b> ${item.modelo || 'N/A'}</div>
@@ -218,44 +469,64 @@
                 <div><b>Laboratorio:</b> ${item.laboratorio || 'N/A'}</div>
                 <div><b>Rack:</b> ${item.rack || 'N/A'}</div>
                 <div><b>Contenedor:</b> ${item.contenedor || 'N/A'}</div>
-                <div><b>Costo:</b> $${item.costo || 0}</div>
+                <div><b>Costo:</b> $${(item.costo || 0).toFixed(2)}</div>
+                <div><b>Categorías:</b> ${[
+                    item.consumible ? 'Consumible' : null,
+                    item.pieza ? 'Pieza' : null,
+                    item.herramienta ? 'Herramienta' : null,
+                    item.equipo ? 'Equipo' : null
+                ].filter(Boolean).join(', ') || 'No especificada'}</div>
                 <div style="grid-column: span 2;"><b>Observaciones:</b> ${item.observaciones || 'Sin notas.'}</div>
             `;
 
+            // Buscar imagen en Google Drive
             const img = document.getElementById('main-preview-img');
             const status = document.getElementById('status-foto');
             
-            img.src = "imagenes/sin_foto.jpg"; // Reset temporal
+            img.src = "imagenes/sin_foto.jpg";
             status.innerText = "Buscando foto...";
             
             try {
                 const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(item.nombre)}`);
                 const data = await res.json();
+                
                 if(data.result === "success" && data.id) {
-                    img.src = `https://drive.google.com/uc?export=view&id=${data.id}`;
-                    status.innerText = "✓ Encontrada en Drive";
+                    // URL que funciona con lh3.googleusercontent.com
+                    img.src = `https://lh3.googleusercontent.com/d/${data.id}`;
+                    status.innerText = "✓ Imagen encontrada";
                 } else {
-                    status.innerText = "Sin foto";
+                    status.innerText = "Sin foto disponible";
                 }
             } catch (e) { 
-                status.innerText = "Error de red"; 
+                console.error("Error al cargar imagen:", e);
+                status.innerText = "Error al buscar imagen";
             }
         }
 
+        // Lógica de subida de imágenes
         const fileInput = document.getElementById('fileInput');
         const btnConfirmUp = document.getElementById('btnConfirmUp');
 
-        fileInput.onchange = () => { if(fileInput.files[0]) btnConfirmUp.style.display = 'block'; };
+        fileInput.onchange = () => {
+            if(fileInput.files[0]) {
+                btnConfirmUp.style.display = 'block';
+            }
+        };
 
         btnConfirmUp.onclick = () => {
             if(!itemSeleccionado) return alert("Selecciona un material primero");
+            
             const file = fileInput.files[0];
+            if (!file) return alert("Selecciona una imagen primero");
+            
             const reader = new FileReader();
             reader.readAsDataURL(file);
+            
             reader.onload = async () => {
                 document.getElementById('status-foto').innerText = "SUBIENDO...";
                 btnConfirmUp.disabled = true;
                 const base64Data = reader.result.split(',')[1];
+                
                 try {
                     const res = await fetch(scriptURL, {
                         method: "POST",
@@ -265,50 +536,87 @@
                             itemName: itemSeleccionado.nombre
                         })
                     });
+                    
                     const d = await res.json();
                     if(d.result === "success") {
-                        alert("¡Imagen guardada!");
+                        alert("✅ ¡Imagen guardada correctamente!");
                         btnConfirmUp.style.display = 'none';
                         fileInput.value = '';
                         mostrarDetalle(itemSeleccionado);
-                    } else { alert("Error: " + d.error); }
-                } catch (e) { alert("Error al subir: " + e.message); }
+                    } else {
+                        alert("❌ Error: " + (d.error || "No se pudo subir la imagen"));
+                    }
+                } catch (e) { 
+                    alert("❌ Error de conexión: " + e.message); 
+                }
+                
                 btnConfirmUp.disabled = false;
             };
         };
 
+        // Carrito y salidas
         window.agregar = (id) => {
             const prod = productos.find(x => x.id === id);
-            if(!prod || prod.cantidad < 1) return alert("Sin stock");
-            carrito.push({...prod});
+            if(!prod) return;
+            
+            if(prod.cantidad < 1) {
+                alert("❌ Este producto está agotado");
+                return;
+            }
+            
+            // Verificar si ya está en el carrito
+            const existente = carrito.find(item => item.id === id);
+            if (existente) {
+                if(confirm("Este producto ya está en el vale. ¿Agregar otra unidad?")) {
+                    existente.cantidad += 1;
+                }
+            } else {
+                carrito.push({
+                    id: prod.id,
+                    modelo: prod.modelo || '',
+                    noParte: prod.noParte || '',
+                    nombre: prod.nombre || '',
+                    cantidad: 1
+                });
+            }
+            
             dibujarCarrito();
         };
 
         function dibujarCarrito() {
             const list = document.getElementById('cart-list');
-            if(carrito.length === 0) { list.innerHTML = "<i>Vacío</i>"; return; }
+            if(carrito.length === 0) { 
+                list.innerHTML = "<i>Vacío - Agrega materiales con el botón +</i>"; 
+                return; 
+            }
+            
             list.innerHTML = carrito.map((item, i) => `
-                <div style="border-bottom:1px solid #eee; padding:3px; display:flex; justify-content:space-between; align-items:center; color:black;">
-                    <span style="font-size:11px;">${item.nombre}</span>
-                    <button onclick="carrito.splice(${i},1); dibujarCarrito();" style="color:red; border:none; background:none; cursor:pointer;">✕</button>
+                <div style="border-bottom:1px solid #eee; padding:5px; display:flex; justify-content:space-between; align-items:center; color:black;">
+                    <span style="font-size:11px; flex:1;">${item.nombre}</span>
+                    <span style="font-size:11px; font-weight:bold; margin:0 5px;">${item.cantidad} pz</span>
+                    <button onclick="carrito.splice(${i},1); dibujarCarrito();" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✕</button>
                 </div>
             `).join('');
         }
 
+        // Procesar salida y generar PDF
         window.procesarSalida = async () => {
-            const r = document.getElementById('recep').value;
-            const py = document.getElementById('proyec').value;
-            if(!r || !py || carrito.length === 0) return alert("Faltan datos");
+            const r = document.getElementById('recep').value.trim();
+            const py = document.getElementById('proyec').value.trim();
+            
+            if(!r || !py) return alert("❌ Faltan datos: ingresa quién recibe y el proyecto");
+            if(carrito.length === 0) return alert("❌ Agrega al menos un material al vale");
 
-            if(confirm("¿Generar vale y descontar stock?")) {
+            if(confirm(`¿Generar vale para ${r} (${carrito.length} productos) y descontar stock?`)) {
                 try {
-                    const fecha = new Date().toLocaleDateString();
-                    
-                    // DESCONTAR STOCK Y REGISTRAR EN FIRESTORE
+                    // Descontar stock en Firestore
                     for (const item of carrito) {
-                        await updateDoc(doc(db, "productos", item.id), { cantidad: increment(-1) });
+                        await updateDoc(doc(db, "productos", item.id), { 
+                            cantidad: increment(-item.cantidad) 
+                        });
                     }
 
+                    // Registrar movimiento en Firestore
                     await addDoc(collection(db, "movimientos"), {
                         tipo: "SALIDA",
                         fecha: serverTimestamp(),
@@ -318,79 +626,167 @@
                         productos: carrito.map(item => ({
                             id: item.id,
                             modelo: item.modelo || '',
+                            noParte: item.noParte || '',
                             nombre: item.nombre || '',
-                            cantidad: 1
+                            cantidad: item.cantidad
                         }))
                     });
 
-                    // GENERAR PDF (Si falla el PDF, el stock ya se descontó)
-                    await generarPDF(fecha, user.usuario, r, py, carrito);
+                    // Generar PDF
+                    generarPDF(r, py, carrito);
 
+                    // Limpiar carrito
                     carrito = []; 
                     dibujarCarrito();
                     document.getElementById('recep').value = ''; 
                     document.getElementById('proyec').value = '';
+                    
                 } catch (err) {
                     console.error(err);
-                    alert("Error al procesar salida: " + err.message);
+                    alert("❌ Error al procesar salida: " + err.message);
                 }
             }
         };
 
-        async function generarPDF(fecha, almacenista, receptor, proyecto, items) {
+        // Generar PDF profesional
+        function generarPDF(receptor, proyecto, items) {
             try {
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF();
+                const pdf = new jsPDF('p', 'mm', 'letter'); // Tamaño carta estándar
                 
-                pdf.setFontSize(18);
+                // Encabezado con logo y título
+                pdf.setFillColor(26, 35, 126); // Azul oscuro
+                pdf.rect(0, 0, 216, 25, 'F'); // Rectángulo de encabezado
+                
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(20);
                 pdf.setFont(undefined, 'bold');
-                pdf.text('VALE DE SALIDA DE MATERIAL', 105, 20, { align: 'center' });
+                pdf.text("UNIVERSIDAD TAMAULIPECA", 108, 12, { align: 'center' });
                 
+                pdf.setFontSize(14);
+                pdf.text("ALMACÉN UT - VALE DE SALIDA", 108, 20, { align: 'center' });
+                
+                // Información del vale
+                pdf.setTextColor(0, 0, 0);
                 pdf.setFontSize(11);
                 pdf.setFont(undefined, 'normal');
-                pdf.text(`Fecha: ${fecha}`, 20, 35);
-                pdf.text(`Entrega: ${almacenista}`, 120, 35);
-                pdf.text(`Recibe: ${receptor}`, 20, 45);
-                pdf.text(`Proyecto: ${proyecto}`, 120, 45);
                 
-                let currentY = 60;
-                // Encabezados
-                pdf.setFont(undefined, 'bold');
-                pdf.rect(20, currentY, 25, 10); pdf.text('CANT.', 22, currentY + 7);
-                pdf.rect(45, currentY, 40, 10); pdf.text('MODELO', 47, currentY + 7);
-                pdf.rect(85, currentY, 40, 10); pdf.text('NO. PARTE', 87, currentY + 7);
-                pdf.rect(125, currentY, 65, 10); pdf.text('DESCRIPCIÓN', 127, currentY + 7);
-                
-                pdf.setFont(undefined, 'normal');
-                currentY += 10;
-                
-                items.forEach((item) => {
-                    pdf.rect(20, currentY, 25, 10); pdf.text('1 PZ', 22, currentY + 7);
-                    pdf.rect(45, currentY, 40, 10); pdf.text(String(item.modelo || '-').substring(0, 15), 47, currentY + 7);
-                    pdf.rect(85, currentY, 40, 10); pdf.text(String(item.noParte || '-').substring(0, 15), 87, currentY + 7);
-                    pdf.rect(125, currentY, 65, 10); pdf.text(String(item.nombre || '-').substring(0, 25), 127, currentY + 7);
-                    currentY += 10;
+                const fecha = new Date().toLocaleDateString('es-MX', {
+                    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
                 });
                 
-                const firmasY = currentY + 30;
-                pdf.line(30, firmasY, 80, firmasY); pdf.text('Firma Entrega', 45, firmasY + 7);
-                pdf.line(110, firmasY, 160, firmasY); pdf.text('Firma Recibe', 125, firmasY + 7);
+                pdf.text(`Fecha: ${fecha}`, 20, 40);
+                pdf.text(`Hora: ${new Date().toLocaleTimeString('es-MX')}`, 20, 46);
+                pdf.text(`Entrega: ${user.usuario}`, 120, 40);
+                pdf.text(`Recibe: ${receptor}`, 120, 46);
+                pdf.text(`Proyecto: ${proyecto}`, 20, 52);
                 
-                pdf.save(`Vale_${receptor.replace(/\s+/g, '_')}.pdf`);
-                alert('✅ Vale generado y PDF descargado.');
+                // Tabla de productos
+                let startY = 65;
+                const pageHeight = 280; // Altitud máxima de página carta
+                
+                // Encabezados de tabla
+                pdf.setFillColor(44, 62, 80);
+                pdf.rect(20, startY, 176, 8, 'F');
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(10);
+                pdf.setFont(undefined, 'bold');
+                
+                pdf.text("CANT.", 22, startY + 5.5);
+                pdf.text("MODELO", 45, startY + 5.5);
+                pdf.text("NO. PARTE", 85, startY + 5.5);
+                pdf.text("DESCRIPCIÓN", 125, startY + 5.5);
+                
+                startY += 8;
+                pdf.setTextColor(0, 0, 0);
+                pdf.setFont(undefined, 'normal');
+                
+                // Productos
+                items.forEach((item, index) => {
+                    // Verificar si necesitamos nueva página
+                    if (startY > pageHeight - 20) {
+                        pdf.addPage();
+                        startY = 20;
+                        
+                        // Repetir encabezado de tabla en nueva página
+                        pdf.setFillColor(44, 62, 80);
+                        pdf.rect(20, startY, 176, 8, 'F');
+                        pdf.setTextColor(255, 255, 255);
+                        pdf.setFontSize(10);
+                        pdf.setFont(undefined, 'bold');
+                        
+                        pdf.text("CANT.", 22, startY + 5.5);
+                        pdf.text("MODELO", 45, startY + 5.5);
+                        pdf.text("NO. PARTE", 85, startY + 5.5);
+                        pdf.text("DESCRIPCIÓN", 125, startY + 5.5);
+                        
+                        startY += 8;
+                        pdf.setTextColor(0, 0, 0);
+                        pdf.setFont(undefined, 'normal');
+                    }
+                    
+                    // Dibujar fila
+                    pdf.rect(20, startY, 176, 8); // Borde de celda
+                    
+                    // Contenido
+                    pdf.text(`${item.cantidad} PZ`, 22, startY + 5.5);
+                    pdf.text(item.modelo?.substring(0, 15) || '-', 45, startY + 5.5);
+                    pdf.text(item.noParte?.substring(0, 15) || '-', 85, startY + 5.5);
+                    pdf.text(item.nombre?.substring(0, 30) || '-', 125, startY + 5.5);
+                    
+                    startY += 8;
+                });
+                
+                // Totales y firmas
+                startY += 10;
+                pdf.setFont(undefined, 'bold');
+                pdf.text(`TOTAL DE PRODUCTOS: ${items.length}`, 20, startY);
+                pdf.text(`TOTAL DE PIEZAS: ${items.reduce((sum, item) => sum + item.cantidad, 0)}`, 120, startY);
+                
+                // Firmas
+                startY += 30;
+                pdf.line(30, startY, 100, startY);
+                pdf.line(116, startY, 186, startY);
+                
+                startY += 5;
+                pdf.setFontSize(10);
+                pdf.text("FIRMA DE ENTREGA", 50, startY);
+                pdf.text("FIRMA DE RECEPCIÓN", 136, startY);
+                
+                // Pie de página
+                startY += 20;
+                pdf.setFontSize(8);
+                pdf.setTextColor(100, 100, 100);
+                pdf.text("Documento generado automáticamente por el Sistema de Control de Inventario UT", 108, startY, { align: 'center' });
+                
+                // Guardar PDF
+                const nombreArchivo = `Vale_${receptor.replace(/\s+/g, '_')}_${Date.now()}.pdf`;
+                pdf.save(nombreArchivo);
+                
+                alert(`✅ Vale generado exitosamente\n📄 PDF: ${nombreArchivo}`);
+                
             } catch (pdfErr) {
-                console.error("Fallo PDF:", pdfErr);
-                alert("El stock se descontó, pero hubo un error creando el PDF.");
+                console.error("Error generando PDF:", pdfErr);
+                alert("⚠️ El stock se descontó, pero hubo un error generando el PDF.");
             }
         }
 
+        // Buscador en tiempo real
         document.getElementById('mainSearch').oninput = (e) => {
-            const t = e.target.value.toLowerCase();
-            renderTable(productos.filter(p => 
-                (p.nombre||'').toLowerCase().includes(t) || 
-                (p.noParte||'').toLowerCase().includes(t) || 
-                (p.modelo||'').toLowerCase().includes(t)
-            ));
+            const termino = e.target.value.toLowerCase().trim();
+            if(!termino) {
+                renderTable(productos);
+                return;
+            }
+            
+            const filtrados = productos.filter(p => 
+                (p.nombre || '').toLowerCase().includes(termino) || 
+                (p.noParte || '').toLowerCase().includes(termino) || 
+                (p.modelo || '').toLowerCase().includes(termino) ||
+                (p.laboratorio || '').toLowerCase().includes(termino)
+            );
+            
+            renderTable(filtrados);
         };
     </script>
 </body>
