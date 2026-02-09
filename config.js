@@ -2,12 +2,13 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyCtIagFFJBFRjvg5usXTm575YqOeeDE1G0",
-    authDomain: "mi-inventario-51f82.firebaseapp.com",
-    projectId: "mi-inventario-51f82",
-    storageBucket: "mi-inventario-51f82.firebasestorage.app",
-    messagingSenderId: "79417755416",
-    appId: "1:79417755416:web:e1bbab46cda2bdbb5da56d"
+  apiKey: "AIzaSyCAIGUn8pMk-1YqNNTZUIhHUnKXe8mCz1U",
+  authDomain: "inventario-1bc15.firebaseapp.com",
+  projectId: "inventario-1bc15",
+  storageBucket: "inventario-1bc15.firebasestorage.app",
+  messagingSenderId: "1052136059240",
+  appId: "1:1052136059240:web:f4be7d9f87adbba98966dd",
+  measurementId: "G-V4BS5HT1VX"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -32,4 +33,5 @@ export function checkAuth(permisoRequerido = null) {
         return null;
     }
     return user;
+
 }
