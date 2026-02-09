@@ -9,48 +9,70 @@
 <body style="background:#2c3e50; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0;">
     <div class="login-box" style="background:white; padding:40px; border-radius:8px; width:350px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
         <h2 style="color:#333; margin-top:0; margin-bottom:30px;">INICIAR SESIÓN</h2>
-        <input type="text" id="user" placeholder="Usuario" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box; font-size:16px;">
-        <input type="password" id="pass" placeholder="Contraseña" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box; font-size:16px;">
-        <button id="btnLogin" class="btn-action" style="width:100%; background:#27ae60; color:white; border:none; padding:12px; border-radius:4px; font-size:16px; cursor:pointer;">ENTRAR</button>
-        <div id="errorMsg" style="color:#e74c3c; margin-top:15px; display:none;"></div>
+        
+        <input type="text" id="user" placeholder="Usuario" 
+               style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box; font-size:16px;">
+        
+        <input type="password" id="pass" placeholder="Contraseña" 
+               style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box; font-size:16px;">
+        
+        <button id="btnLogin" class="btn-action" 
+                style="width:100%; background:#27ae60; color:white; border:none; padding:12px; border-radius:4px; font-size:16px; cursor:pointer; font-weight:bold;">
+            ENTRAR
+        </button>
+        
+        <div id="errorMsg" style="color:#e74c3c; margin-top:15px; display:none; font-size:14px;"></div>
     </div>
 
-    <script type="module">
-        import { db } from './config.js';
-        import { collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <!-- Incluir Firebase directamente sin módulos -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    
+    <script>
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyCtIagFFJBFRjvg5usXTm575YqOeeDE1G0",
+            authDomain: "mi-inventario-51f82.firebaseapp.com",
+            projectId: "mi-inventario-51f82",
+            storageBucket: "mi-inventario-51f82.firebasestorage.app",
+            messagingSenderId: "79417755416",
+            appId: "1:79417755416:web:e1bbab46cda2bdbb5da56d"
+        };
 
-        // Asegurar que Firebase esté inicializado
-        if (!db) {
-            console.error("Error: Firebase no está inicializado. Revisa config.js");
-            alert("Error de configuración del sistema. Contacte al administrador.");
+        // Inicializar Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Verificar si ya hay sesión
+        if (sessionStorage.getItem("currentUser")) {
+            window.location.href = "index.html";
         }
 
-        // Función de login
         async function login() {
             const userInput = document.getElementById('user');
             const passInput = document.getElementById('pass');
             const errorMsg = document.getElementById('errorMsg');
+            const btn = document.getElementById('btnLogin');
             
-            const u = userInput.value.trim(); // Añadido trim para limpiar espacios
+            const u = userInput.value.trim();
             const p = passInput.value;
             
-            // Validación básica
+            // Validación
             if (!u || !p) {
                 errorMsg.textContent = "Por favor, complete todos los campos";
                 errorMsg.style.display = 'block';
                 return;
             }
             
-            // Deshabilitar botón durante la consulta
-            const btn = document.getElementById('btnLogin');
+            // Deshabilitar botón durante login
             btn.disabled = true;
             btn.textContent = "VERIFICANDO...";
             btn.style.opacity = "0.7";
             
             try {
-                // CASO: ADMIN MAESTRO
+                // CASO 1: ADMIN MAESTRO
                 if (u === "admin" && p === "#Reyn0sa#") {
-                    console.log("Acceso admin maestro detectado");
+                    console.log("Acceso admin maestro");
                     
                     const adminData = { 
                         usuario: 'admin',
@@ -64,69 +86,63 @@
                         }
                     };
                     
+                    // Registrar movimiento (si se puede)
                     try {
-                        await addDoc(collection(db, "movimientos"), {
+                        await db.collection("movimientos").add({
                             tipo: "ACCESO",
-                            fecha: serverTimestamp(),
+                            fecha: firebase.firestore.FieldValue.serverTimestamp(),
                             usuario: 'admin',
                             descripcion: "Inicio de sesión Admin Maestro"
                         });
                     } catch (logError) {
-                        console.warn("No se pudo registrar en movimientos, pero el login continuará", logError);
+                        console.warn("No se pudo registrar movimiento:", logError);
                     }
                     
-                    // Limpiar datos sensibles
-                    userInput.value = '';
-                    passInput.value = '';
-                    
+                    // Guardar sesión y redirigir
                     sessionStorage.setItem("currentUser", JSON.stringify(adminData));
                     window.location.href = "index.html";
                     return;
                 }
                 
-                // CASO: USUARIOS NORMALES
-                console.log("Buscando usuario en Firebase:", u);
-                const q = query(collection(db, "usuarios"), 
-                    where("usuario", "==", u), 
-                    where("password", "==", p)
-                );
+                // CASO 2: USUARIOS NORMALES
+                console.log("Buscando usuario:", u);
                 
-                const snap = await getDocs(q);
+                const querySnapshot = await db.collection("usuarios")
+                    .where("usuario", "==", u)
+                    .where("password", "==", p)
+                    .get();
                 
-                if (!snap.empty) {
-                    const userData = snap.docs[0].data();
+                if (!querySnapshot.empty) {
+                    const userDoc = querySnapshot.docs[0];
+                    const userData = userDoc.data();
                     console.log("Usuario encontrado:", userData);
                     
+                    // Registrar acceso
                     try {
-                        await addDoc(collection(db, "movimientos"), {
+                        await db.collection("movimientos").add({
                             tipo: "ACCESO",
-                            fecha: serverTimestamp(),
+                            fecha: firebase.firestore.FieldValue.serverTimestamp(),
                             usuario: u,
                             descripcion: "Inicio de sesión exitoso"
                         });
                     } catch (logError) {
-                        console.warn("No se pudo registrar en movimientos", logError);
+                        console.warn("No se pudo registrar movimiento:", logError);
                     }
                     
-                    // Limpiar campos
-                    userInput.value = '';
-                    passInput.value = '';
-                    
+                    // Guardar sesión y redirigir
                     sessionStorage.setItem("currentUser", JSON.stringify(userData));
                     window.location.href = "index.html";
-                } else { 
-                    console.log("Credenciales incorrectas");
+                } else {
+                    // Credenciales incorrectas
                     errorMsg.textContent = "Usuario o contraseña incorrectos";
                     errorMsg.style.display = 'block';
-                    
-                    // Limpiar solo contraseña
                     passInput.value = '';
                     passInput.focus();
                 }
                 
             } catch (error) {
                 console.error("Error en login:", error);
-                errorMsg.textContent = "Error de conexión. Intente nuevamente.";
+                errorMsg.textContent = "Error de conexión. Verifique su internet o contacte al administrador.";
                 errorMsg.style.display = 'block';
             } finally {
                 // Restaurar botón
@@ -152,22 +168,11 @@
             }
         });
         
-        // Limpiar mensaje de error al empezar a escribir
-        document.getElementById('user').addEventListener('input', function() {
-            document.getElementById('errorMsg').style.display = 'none';
-        });
-        
-        document.getElementById('pass').addEventListener('input', function() {
-            document.getElementById('errorMsg').style.display = 'none';
-        });
-        
-        // Verificar si ya hay sesión activa
-        window.addEventListener('DOMContentLoaded', () => {
-            const currentUser = sessionStorage.getItem("currentUser");
-            if (currentUser) {
-                console.log("Ya hay sesión activa, redirigiendo...");
-                window.location.href = "index.html";
-            }
+        // Limpiar mensajes de error al escribir
+        ['user', 'pass'].forEach(id => {
+            document.getElementById(id).addEventListener('input', function() {
+                document.getElementById('errorMsg').style.display = 'none';
+            });
         });
     </script>
 </body>
