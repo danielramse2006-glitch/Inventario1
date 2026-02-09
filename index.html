@@ -5,16 +5,18 @@
     <title>Inventario - Panel Principal</title>
     <link rel="stylesheet" href="style.css">
     <style>
+        /* Bloqueo de scroll general para scroll interno en tabla */
         body, html { height: 100%; margin: 0; overflow: hidden; background-color: #0080ff; font-family: sans-serif; }
         
         .main-container { 
             display: flex; 
-            height: calc(100vh - 250px);
+            height: calc(100vh - 250px); /* Restamos el espacio del visor inferior */
             padding: 15px; 
             gap: 15px; 
             box-sizing: border-box;
         }
 
+        /* Tabla con scroll independiente */
         .content { 
             flex: 1; 
             display: flex; 
@@ -27,9 +29,11 @@
         }
         .table-wrapper { flex: 1; overflow-y: auto; border: 1px solid #ddd; }
         
+        /* Forzar texto negro en tabla y visor */
         table, .bottom-preview { color: black !important; }
         th { color: white !important; background-color: #2c3e50; }
 
+        /* --- VISOR INFERIOR FIJO --- */
         .bottom-preview {
             position: fixed;
             bottom: 0;
@@ -57,40 +61,12 @@
             border-right: 1px solid #eee;
             padding-right: 20px;
         }
-        #main-preview-img { 
-            max-width: 100%; 
-            max-height: 150px; 
-            object-fit: contain; 
-            border-radius: 5px; 
-        }
+        #main-preview-img { max-width: 100%; max-height: 150px; object-fit: contain; border-radius: 5px; }
 
-        .upload-controls { 
-            margin-top: 10px; 
-            display: flex; 
-            gap: 8px; 
-            justify-content: center; 
-        }
-        .btn-sel { 
-            background: #3498db; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            font-weight: bold; 
-        }
-        .btn-up { 
-            background: #27ae60; 
-            color: white; 
-            border: none; 
-            padding: 6px 12px; 
-            border-radius: 4px; 
-            cursor: pointer; 
-            font-size: 12px; 
-            font-weight: bold; 
-            display: none; 
-        }
+        /* Lógica de botones de subida */
+        .upload-controls { margin-top: 10px; display: flex; gap: 8px; justify-content: center; }
+        .btn-sel { background: #7f8c8d; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-up { background: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; display: none; }
         .btn-up:hover { background: #2ecc71; }
 
         .preview-info-box { flex: 1; overflow-y: auto; height: 100%; }
@@ -98,85 +74,9 @@
 
         .cart-box { background: #fff; padding: 10px; border-radius: 6px; border: 1px solid #ccc; margin-top: 15px; color: black; }
         
-        .side-menu button {
-            background: #3498db;
-            color: white;
-            border: none;
-            padding: 12px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            text-align: left;
-            margin-bottom: 5px;
-            transition: background 0.3s;
-        }
-        
-        .side-menu button:hover {
-            background: #2980b9;
-        }
-        
         @media print {
-            .bottom-preview, .side-menu, #mainSearch, header, .main-container { display: none !important; }
-            #print-vale { 
-                display: block !important; 
-                position: absolute !important; 
-                top: 0 !important; 
-                left: 0 !important; 
-                width: 100% !important; 
-                color: black !important; 
-                background: white !important; 
-                padding: 30px !important; 
-                font-family: Arial, sans-serif !important; 
-                margin: 0 !important;
-            }
-            #print-vale h2 { 
-                color: black !important; 
-                font-size: 20pt !important; 
-                margin: 10px 0 !important; 
-                text-align: center !important; 
-                border-bottom: 2px solid black !important; 
-                padding-bottom: 10px !important; 
-            }
-            #print-vale p { 
-                color: black !important; 
-                font-size: 11pt !important; 
-                margin: 8px 0 !important; 
-                line-height: 1.4 !important; 
-            }
-            #print-vale table { 
-                width: 100% !important; 
-                border-collapse: collapse !important; 
-                margin: 20px 0 !important; 
-                color: black !important; 
-            }
-            #print-vale table th { 
-                background: #333 !important; 
-                color: white !important; 
-                padding: 10px 8px !important; 
-                border: 2px solid black !important; 
-                font-size: 11pt !important; 
-                text-align: center !important; 
-            }
-            #print-vale table td { 
-                border: 1px solid black !important; 
-                padding: 8px !important; 
-                color: black !important; 
-                font-size: 10pt !important; 
-                vertical-align: middle !important; 
-            }
-            .firmas-box { 
-                margin-top: 80px !important; 
-                display: flex !important; 
-                justify-content: space-around !important; 
-            }
-            .firma-item { 
-                text-align: center !important; 
-                border-top: 2px solid black !important; 
-                width: 220px !important; 
-                padding-top: 8px !important; 
-                color: black !important; 
-                font-weight: bold !important; 
-            }
+            .bottom-preview, .side-menu, #mainSearch, header { display: none !important; }
+            #print-vale { display: block !important; position: absolute; top: 0; left: 0; width: 100%; color: black; }
         }
     </style>
 </head>
@@ -185,23 +85,23 @@
     
     <div class="main-container">
         <nav class="side-menu" style="width: 200px; display: flex; flex-direction: column; gap: 10px;">
-            <button id="navReg" style="display:none;" onclick="location.href='registro.html'">✏️ Registrar</button>
-            <button id="navAct" style="display:none;" onclick="location.href='actualizar.html'">🔄 Actualizar</button>
-            <button id="navEli" style="display:none;" onclick="location.href='eliminar.html'">🗑️ Eliminar</button>
-            <button id="navDev" style="display:none;" onclick="location.href='devolver.html'">↩️ Devolver</button>
-            <button id="navImp" style="display:none;" onclick="location.href='importar.html'">📥 Importar</button>
-            <button id="navMov" style="display:none;" onclick="location.href='movimientos.html'">📋 Movimientos</button>
-            <button id="navExp" style="display:none;" onclick="location.href='exportar.html'">📊 Exportar Excel</button>
-            <button id="navAdm" style="display:none;" onclick="location.href='usuarios.html'">👥 Usuarios</button>
+            <button id="navReg" style="display:none;" onclick="location.href='registro.html'">Registrar</button>
+            <button id="navAct" style="display:none;" onclick="location.href='actualizar.html'">Actualizar</button>
+            <button id="navEli" style="display:none;" onclick="location.href='eliminar.html'">Eliminar</button>
+            <button id="navDev" style="display:none;" onclick="location.href='devolver.html'">Devolver</button>
+            <button id="navImp" style="display:none;" onclick="location.href='importar.html'">Importar</button>
+            <button id="navMov" style="display:none;" onclick="location.href='movimientos.html'">Movimientos</button>
+            <button id="navExp" style="display:none;" onclick="location.href='exportar.html'">Exportar</button>
+            <button id="navAdm" style="display:none; background:#f1c40f;" onclick="location.href='usuarios.html'">Usuarios</button>
             
             <div id="cart-box" class="cart-box" style="display:none;">
-                <h4 style="margin:0; text-align:center;">📋 VALE DE SALIDA</h4>
+                <h4 style="margin:0; text-align:center;">📋 VALE</h4>
                 <div id="cart-list" style="margin: 10px 0; font-size: 0.8em; max-height: 80px; overflow-y:auto;"><i>Vacío</i></div>
                 <input type="text" id="recep" placeholder="¿Quién recibe?" style="width:90%; margin-bottom: 5px;">
                 <input type="text" id="proyec" placeholder="Proyecto" style="width:90%;">
                 <button onclick="procesarSalida()" style="width:100%; background:#e67e22; color:white; border:none; padding:8px; margin-top:5px; cursor:pointer; font-weight:bold;">GENERAR VALE</button>
             </div>
-            <button class="btn-logout" style="background:#c0392b; color:white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: auto;" onclick="sessionStorage.clear(); location.href='login.html'">🚪 Cerrar Sesión</button>
+            <button class="btn-logout" style="background:#c0392b; color:white; padding: 10px; border: none; border-radius: 4px; cursor: pointer; margin-top: auto;" onclick="sessionStorage.clear(); location.href='login.html'">Cerrar Sesión</button>
         </nav>
 
         <section class="content">
@@ -223,7 +123,7 @@
     <div class="bottom-preview">
         <div class="preview-image-box">
             <span id="status-foto" style="font-size:11px; color:#2980b9; font-weight:bold; margin-bottom:5px;">Selecciona un material</span>
-            <img id="main-preview-img" src="imagenes/sin_foto.jpg" alt="Imagen del producto">
+            <img id="main-preview-img" src="imagenes/sin_foto.jpg">
             
             <div class="upload-controls" id="up-ui" style="display:none;">
                 <button class="btn-sel" onclick="document.getElementById('fileInput').click()">📁 Elegir</button>
@@ -241,17 +141,16 @@
         </div>
     </div>
 
-    <!-- VALE DE IMPRESIÓN -->
     <div id="print-vale" style="display:none; padding: 30px;">
         <h2 style="text-align:center;">VALE DE SALIDA DE MATERIAL</h2>
-        <p><strong>Fecha:</strong> <span id="f-fec"></span> | <strong>Almacén:</strong> <span id="f-alm"></span></p>
+        <p><strong>Fecha:</strong> <span id="f-fec"></span> | <strong>Entrega:</strong> <span id="f-alm"></span></p>
         <p><strong>Recibe:</strong> <span id="f-rec"></span> | <strong>Proyecto:</strong> <span id="f-pro"></span></p>
         <table border="1" style="width:100%; border-collapse:collapse; margin-top: 20px;">
             <thead><tr><th>CANT.</th><th>MODELO</th><th>NO. PARTE</th><th>DESCRIPCIÓN</th></tr></thead>
             <tbody id="f-lista"></tbody>
         </table>
         <div style="margin-top:80px; display:flex; justify-content:space-around;">
-            <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top: 5px;">Firma Almacén</div>
+            <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top: 5px;">Firma Entrega</div>
             <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top: 5px;">Firma Recibe</div>
         </div>
     </div>
@@ -265,11 +164,10 @@
         let productos = [];
         let carrito = [];
         let itemSeleccionado = null;
+        // URL DE TU SCRIPT DE GOOGLE
         const scriptURL = "https://script.google.com/macros/s/AKfycbxaEtN66UYbSOO57Wm9HPrjv7IyfzV8Q3cyZgvDKkKcC8PTohwGaLhznjI3AfP2VTLS/exec";
 
         const esAdmin = user.usuario === 'admin';
-        
-        // PERMISOS DE BOTONES
         if(esAdmin || p.registrar) document.getElementById('navReg').style.display = 'block';
         if(esAdmin || p.actualizar) document.getElementById('navAct').style.display = 'block';
         if(esAdmin || p.eliminar) document.getElementById('navEli').style.display = 'block';
@@ -286,6 +184,7 @@
             document.getElementById('th-plus').style.display = 'table-cell';
         }
 
+        // Firestore Realtime
         onSnapshot(collection(db, "productos"), (snap) => {
             productos = [];
             snap.forEach(d => productos.push({...d.data(), id: d.id}));
@@ -301,7 +200,7 @@
                 tr.onclick = () => mostrarDetalle(item);
                 tr.innerHTML = `
                     <td style="display:${(esAdmin || p.salidas) ? 'table-cell' : 'none'}">
-                        <button class="btn-add-item" onclick="event.stopPropagation(); agregar('${item.id}')" style="background:#27ae60; color:white; border:none; padding:5px 10px; border-radius:3px; cursor:pointer; font-weight:bold;">+</button>
+                        <button class="btn-add-item" onclick="event.stopPropagation(); agregar('${item.id}')">+</button>
                     </td>
                     <td>${item.modelo || '-'}</td>
                     <td style="font-weight:bold;">${item.noParte || '-'}</td>
@@ -315,7 +214,6 @@
             });
         }
 
-        // FUNCIÓN DE DETALLES CON LÓGICA ORIGINAL DE IMÁGENES
         async function mostrarDetalle(item) {
             itemSeleccionado = item;
             document.getElementById('p-nombre').innerText = item.nombre;
@@ -336,8 +234,8 @@
             try {
                 const res = await fetch(`${scriptURL}?itemName=${encodeURIComponent(item.nombre)}`);
                 const data = await res.json();
-                
                 if(data.result === "success" && data.id) {
+                    // URL CORREGIDA PARA VISUALIZACIÓN - USAR EL FORMATO QUE FUNCIONA
                     img.src = `https://lh3.googleusercontent.com/d/${data.id}`;
                     status.innerText = "✓ Encontrada en Drive";
                 } else {
@@ -345,12 +243,12 @@
                     status.innerText = "Sin foto";
                 }
             } catch (e) { 
-                status.innerText = "Error de red";
+                status.innerText = "Error de red"; 
                 img.src = "imagenes/sin_foto.jpg";
             }
         }
 
-        // LÓGICA DE SUBIDA DE IMÁGENES
+        // LÓGICA DE SUBIDA AJUSTADA AL SCRIPT
         const fileInput = document.getElementById('fileInput');
         const btnConfirmUp = document.getElementById('btnConfirmUp');
 
@@ -392,6 +290,7 @@
             };
         };
 
+        // Carrito y Salidas
         window.agregar = (id) => {
             const prod = productos.find(x => x.id === id);
             if(prod.cantidad < 1) return alert("Sin stock");
@@ -405,45 +304,37 @@
             list.innerHTML = carrito.map((item, i) => `
                 <div style="border-bottom:1px solid #eee; padding:3px; display:flex; justify-content:space-between; align-items:center; color:black;">
                     <span style="font-size:11px;">${item.nombre}</span>
-                    <button onclick="carrito.splice(${i},1); dibujarCarrito();" style="color:red; border:none; background:none; cursor:pointer; font-weight:bold;">✕</button>
+                    <button onclick="carrito.splice(${i},1); dibujarCarrito();" style="color:red; border:none; background:none; cursor:pointer;">✕</button>
                 </div>
             `).join('');
         }
 
-        // FUNCIÓN DE SALIDA CON REGISTRO DE MOVIMIENTO
         window.procesarSalida = async () => {
-            const receptor = document.getElementById('recep').value.trim();
-            const proyecto = document.getElementById('proyec').value.trim();
-            
-            if(!receptor || !proyecto || carrito.length === 0) {
-                alert("Completa todos los datos del vale y agrega productos");
-                return;
-            }
+            const r = document.getElementById('recep').value;
+            const py = document.getElementById('proyec').value;
+            if(!r || !py || carrito.length === 0) return alert("Faltan datos");
 
             if(confirm("¿Generar vale y descontar stock?")) {
-                const fechaHora = new Date();
-                document.getElementById('f-fec').innerText = fechaHora.toLocaleDateString('es-MX');
+                document.getElementById('f-fec').innerText = new Date().toLocaleDateString();
                 document.getElementById('f-alm').innerText = user.usuario;
-                document.getElementById('f-rec').innerText = receptor;
-                document.getElementById('f-pro').innerText = proyecto;
+                document.getElementById('f-rec').innerText = r;
+                document.getElementById('f-pro').innerText = py;
                 document.getElementById('f-lista').innerHTML = carrito.map(i => `
-                    <tr><td>1 PZ</td><td>${i.modelo || 'N/A'}</td><td>${i.noParte || 'N/A'}</td><td>${i.nombre || 'N/A'}</td></tr>
+                    <tr><td>1 PZ</td><td>${i.modelo}</td><td>${i.noParte}</td><td>${i.nombre}</td></tr>
                 `).join('');
 
                 // DESCONTAR STOCK
                 for (const item of carrito) {
-                    await updateDoc(doc(db, "productos", item.id), { 
-                        cantidad: increment(-1) 
-                    });
+                    await updateDoc(doc(db, "productos", item.id), { cantidad: increment(-1) });
                 }
 
-                // REGISTRAR MOVIMIENTO DE SALIDA
+                // ✅ REGISTRAR MOVIMIENTO DE SALIDA
                 await addDoc(collection(db, "movimientos"), {
                     tipo: "SALIDA",
                     fecha: serverTimestamp(),
                     almacenista: user.usuario,
-                    receptor: receptor,
-                    proyecto: proyecto,
+                    receptor: r,
+                    proyecto: py,
                     productos: carrito.map(item => ({
                         id: item.id,
                         modelo: item.modelo || '',
@@ -452,20 +343,14 @@
                         cantidad: 1
                     }))
                 });
-                
-                // IMPRIMIR
+
                 window.print();
-                
-                // LIMPIAR
-                carrito = []; 
-                dibujarCarrito();
-                document.getElementById('recep').value = ''; 
-                document.getElementById('proyec').value = '';
-                
-                alert("✅ Vale generado y stock actualizado");
+                carrito = []; dibujarCarrito();
+                document.getElementById('recep').value = ''; document.getElementById('proyec').value = '';
             }
         };
 
+        // Buscador
         document.getElementById('mainSearch').oninput = (e) => {
             const t = e.target.value.toLowerCase();
             renderTable(productos.filter(p => 
