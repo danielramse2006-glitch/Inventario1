@@ -1,65 +1,174 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8"><title>Login - Inventario</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Inventario</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body style="background:#2c3e50; display:flex; justify-content:center; align-items:center; height:100vh;">
-    <div class="login-box" style="background:white; padding:40px; border-radius:8px; width:350px; text-align:center;">
-        <h2 style="color:#333;">INICIAR SESIÓN</h2>
-        <input type="text" id="user" placeholder="Usuario" style="margin-bottom:15px;">
-        <input type="password" id="pass" placeholder="Contraseña" style="margin-bottom:20px;">
-        <button id="btnLogin" class="btn-action" style="width:100%; background:#27ae60; color:white;">ENTRAR</button>
+<body style="background:#2c3e50; display:flex; justify-content:center; align-items:center; min-height:100vh; margin:0;">
+    <div class="login-box" style="background:white; padding:40px; border-radius:8px; width:350px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.3);">
+        <h2 style="color:#333; margin-top:0; margin-bottom:30px;">INICIAR SESIÓN</h2>
+        <input type="text" id="user" placeholder="Usuario" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box; font-size:16px;">
+        <input type="password" id="pass" placeholder="Contraseña" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:4px; box-sizing:border-box; font-size:16px;">
+        <button id="btnLogin" class="btn-action" style="width:100%; background:#27ae60; color:white; border:none; padding:12px; border-radius:4px; font-size:16px; cursor:pointer;">ENTRAR</button>
+        <div id="errorMsg" style="color:#e74c3c; margin-top:15px; display:none;"></div>
     </div>
+
     <script type="module">
         import { db } from './config.js';
         import { collection, query, where, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        document.getElementById('btnLogin').onclick = async () => {
-            const u = document.getElementById('user').value; // Sin trim para respetar espacios si los hubiera
-            const p = document.getElementById('pass').value;
+        // Asegurar que Firebase esté inicializado
+        if (!db) {
+            console.error("Error: Firebase no está inicializado. Revisa config.js");
+            alert("Error de configuración del sistema. Contacte al administrador.");
+        }
 
-            // CASO: ADMIN MAESTRO
-            if (u === "admin" && p === "#Reyn0sa#") {
-                const adminData = { 
-                    usuario: 'admin',
-                    permisos: {
-                        registrar: true, actualizar: true, eliminar: true, 
-                        salidas: true, subirImagenes: true
-                    }
-                };
-                
-                await addDoc(collection(db, "movimientos"), {
-                    tipo: "ACCESO",
-                    fecha: serverTimestamp(),
-                    usuario: 'admin',
-                    descripcion: "Inicio de sesión Admin Maestro"
-                });
-                
-                sessionStorage.setItem("currentUser", JSON.stringify(adminData));
-                window.location.href = "index.html";
+        // Función de login
+        async function login() {
+            const userInput = document.getElementById('user');
+            const passInput = document.getElementById('pass');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            const u = userInput.value.trim(); // Añadido trim para limpiar espacios
+            const p = passInput.value;
+            
+            // Validación básica
+            if (!u || !p) {
+                errorMsg.textContent = "Por favor, complete todos los campos";
+                errorMsg.style.display = 'block';
                 return;
             }
             
-            // CASO: USUARIOS NORMALES
-            const q = query(collection(db, "usuarios"), where("usuario", "==", u), where("password", "==", p));
-            const snap = await getDocs(q);
+            // Deshabilitar botón durante la consulta
+            const btn = document.getElementById('btnLogin');
+            btn.disabled = true;
+            btn.textContent = "VERIFICANDO...";
+            btn.style.opacity = "0.7";
             
-            if (!snap.empty) {
-                const userData = snap.docs[0].data();
-                await addDoc(collection(db, "movimientos"), {
-                    tipo: "ACCESO",
-                    fecha: serverTimestamp(),
-                    usuario: u,
-                    descripcion: "Inicio de sesión exitoso"
-                });
+            try {
+                // CASO: ADMIN MAESTRO
+                if (u === "admin" && p === "#Reyn0sa#") {
+                    console.log("Acceso admin maestro detectado");
+                    
+                    const adminData = { 
+                        usuario: 'admin',
+                        nombre: 'Administrador Maestro',
+                        permisos: {
+                            registrar: true, 
+                            actualizar: true, 
+                            eliminar: true, 
+                            salidas: true, 
+                            subirImagenes: true
+                        }
+                    };
+                    
+                    try {
+                        await addDoc(collection(db, "movimientos"), {
+                            tipo: "ACCESO",
+                            fecha: serverTimestamp(),
+                            usuario: 'admin',
+                            descripcion: "Inicio de sesión Admin Maestro"
+                        });
+                    } catch (logError) {
+                        console.warn("No se pudo registrar en movimientos, pero el login continuará", logError);
+                    }
+                    
+                    // Limpiar datos sensibles
+                    userInput.value = '';
+                    passInput.value = '';
+                    
+                    sessionStorage.setItem("currentUser", JSON.stringify(adminData));
+                    window.location.href = "index.html";
+                    return;
+                }
                 
-                sessionStorage.setItem("currentUser", JSON.stringify(userData));
-                window.location.href = "index.html";
-            } else { 
-                alert("Usuario o contraseña incorrectos"); 
+                // CASO: USUARIOS NORMALES
+                console.log("Buscando usuario en Firebase:", u);
+                const q = query(collection(db, "usuarios"), 
+                    where("usuario", "==", u), 
+                    where("password", "==", p)
+                );
+                
+                const snap = await getDocs(q);
+                
+                if (!snap.empty) {
+                    const userData = snap.docs[0].data();
+                    console.log("Usuario encontrado:", userData);
+                    
+                    try {
+                        await addDoc(collection(db, "movimientos"), {
+                            tipo: "ACCESO",
+                            fecha: serverTimestamp(),
+                            usuario: u,
+                            descripcion: "Inicio de sesión exitoso"
+                        });
+                    } catch (logError) {
+                        console.warn("No se pudo registrar en movimientos", logError);
+                    }
+                    
+                    // Limpiar campos
+                    userInput.value = '';
+                    passInput.value = '';
+                    
+                    sessionStorage.setItem("currentUser", JSON.stringify(userData));
+                    window.location.href = "index.html";
+                } else { 
+                    console.log("Credenciales incorrectas");
+                    errorMsg.textContent = "Usuario o contraseña incorrectos";
+                    errorMsg.style.display = 'block';
+                    
+                    // Limpiar solo contraseña
+                    passInput.value = '';
+                    passInput.focus();
+                }
+                
+            } catch (error) {
+                console.error("Error en login:", error);
+                errorMsg.textContent = "Error de conexión. Intente nuevamente.";
+                errorMsg.style.display = 'block';
+            } finally {
+                // Restaurar botón
+                btn.disabled = false;
+                btn.textContent = "ENTRAR";
+                btn.style.opacity = "1";
             }
         }
+
+        // Asignar eventos
+        document.getElementById('btnLogin').onclick = login;
+        
+        // Permitir login con Enter
+        document.getElementById('pass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+        
+        document.getElementById('user').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('pass').focus();
+            }
+        });
+        
+        // Limpiar mensaje de error al empezar a escribir
+        document.getElementById('user').addEventListener('input', function() {
+            document.getElementById('errorMsg').style.display = 'none';
+        });
+        
+        document.getElementById('pass').addEventListener('input', function() {
+            document.getElementById('errorMsg').style.display = 'none';
+        });
+        
+        // Verificar si ya hay sesión activa
+        window.addEventListener('DOMContentLoaded', () => {
+            const currentUser = sessionStorage.getItem("currentUser");
+            if (currentUser) {
+                console.log("Ya hay sesión activa, redirigiendo...");
+                window.location.href = "index.html";
+            }
+        });
     </script>
 </body>
 </html>
