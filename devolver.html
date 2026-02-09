@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Devolución de Material</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body { background: #3498db; min-height: 100vh; }
+        .dev-container { max-width: 800px; margin: 30px auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); }
+        .busqueda-section { background: #ecf0f1; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .producto-card { background: #f9f9f9; border: 2px solid #3498db; padding: 15px; border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .producto-info { flex: 1; }
+        .producto-info strong { color: #2c3e50; display: block; margin-bottom: 5px; }
+        .producto-info small { color: #7f8c8d; }
+        .btn-devolver { background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-devolver:hover { background: #2ecc71; }
+        .cantidad-box { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        .cantidad-box input { width: 80px; text-align: center; padding: 8px; border: 2px solid #3498db; border-radius: 5px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="dev-container">
+        <h2 style="color:#2c3e50; text-align:center; margin-top:0;">↩️ DEVOLUCIÓN DE MATERIAL</h2>
+        
+        <div class="busqueda-section">
+            <h3 style="margin-top:0;">Buscar Producto</h3>
+            <input type="text" id="busqueda" placeholder="Ingresa No. de Parte o Nombre..." style="width:100%; padding:12px; border:1px solid #ccc; border-radius:5px; box-sizing:border-box;">
+            <button id="btnBuscar" class="btn-action" style="width:100%; margin-top:10px; background:#3498db; color:white;">🔍 BUSCAR</button>
+        </div>
+
+        <div id="resultado"></div>
+
+        <button onclick="location.href='index.html'" class="btn-action" style="width:100%; margin-top:20px;">🏠 Volver al Inicio</button>
+    </div>
+
+    <script type="module">
+        import { db, checkAuth } from './config.js';
+        import { collection, query, where, getDocs, doc, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        
+        const user = checkAuth();
+        let productoEncontrado = null;
+
+        document.getElementById('btnBuscar').onclick = async () => {
+            const busqueda = document.getElementById('busqueda').value.trim().toLowerCase();
+            if(!busqueda) return alert("Escribe algo para buscar");
+
+            const q1 = query(collection(db, "productos"), where("noParte", "==", busqueda));
+            let snap = await getDocs(q1);
+            
+            if(snap.empty) {
+                // Buscar por nombre
+                const todosProductos = await getDocs(collection(db, "productos"));
+                const encontrado = todosProductos.docs.find(d => 
+                    (d.data().nombre || '').toLowerCase().includes(busqueda)
+                );
+                
+                if(encontrado) {
+                    productoEncontrado = { id: encontrado.id, ...encontrado.data() };
+                    mostrarProducto();
+                } else {
+                    document.getElementById('resultado').innerHTML = '<p style="text-align:center; color:#e74c3c; font-weight:bold;">❌ Producto no encontrado</p>';
+                }
+            } else {
+                productoEncontrado = { id: snap.docs[0].id, ...snap.docs[0].data() };
+                mostrarProducto();
+            }
+        };
+
+        function mostrarProducto() {
+            const p = productoEncontrado;
+            document.getElementById('resultado').innerHTML = `
+                <div class="producto-card">
+                    <div class="producto-info">
+                        <strong style="font-size:18px; color:#2c3e50;">✅ ${p.nombre || 'Sin nombre'}</strong>
+                        <small><strong>Modelo:</strong> ${p.modelo || 'N/A'}</small> <br>
+                        <small><strong>No. Parte:</strong> ${p.noParte || 'N/A'}</small> <br>
+                        <small><strong>Stock Actual:</strong> <span style="color:#e74c3c; font-weight:bold;">${p.cantidad || 0} piezas</span></small>
+                        
+                        <div class="cantidad-box">
+                            <label><strong>Cantidad a Devolver:</strong></label>
+                            <input type="number" id="cantDev" min="1" value="1">
+                        </div>
+                        
+                        <div style="margin-top:10px;">
+                            <label><strong>¿Quién devuelve?</strong></label>
+                            <input type="text" id="quienDev" placeholder="Nombre de quien devuelve" style="width:100%; padding:8px; margin-top:5px;">
+                        </div>
+                    </div>
+                    <button class="btn-devolver" onclick="confirmarDevolucion()">✅ DEVOLVER AL STOCK</button>
+                </div>
+            `;
+        }
+
+        window.confirmarDevolucion = async () => {
+            const cantidad = parseInt(document.getElementById('cantDev').value);
+            const quienDevuelve = document.getElementById('quienDev').value.trim();
+            
+            if(!cantidad || cantidad < 1) return alert("Ingresa una cantidad válida");
+            if(!quienDevuelve) return alert("Indica quién devuelve el material");
+
+            if(confirm(`¿Devolver ${cantidad} unidad(es) de "${productoEncontrado.nombre}" al stock?`)) {
+                // INCREMENTAR STOCK
+                await updateDoc(doc(db, "productos", productoEncontrado.id), {
+                    cantidad: increment(cantidad)
+                });
+
+                // REGISTRAR MOVIMIENTO
+                await addDoc(collection(db, "movimientos"), {
+                    tipo: "ENTRADA",
+                    fecha: serverTimestamp(),
+                    receptor: quienDevuelve,
+                    almacenista: user.usuario,
+                    productos: [{
+                        id: productoEncontrado.id,
+                        modelo: productoEncontrado.modelo || '',
+                        noParte: productoEncontrado.noParte || '',
+                        nombre: productoEncontrado.nombre || '',
+                        cantidad: cantidad
+                    }]
+                });
+
+                alert(`✅ Devolución registrada exitosamente.\n\n${cantidad} unidad(es) agregadas al stock.`);
+                location.reload();
+            }
+        };
+    </script>
+</body>
+</html>
