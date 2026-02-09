@@ -116,70 +116,66 @@
         }
         
         @media print {
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-            @page { margin: 1.5cm; size: letter portrait; }
-            body { margin: 0 !important; padding: 0 !important; background: white !important; }
             .bottom-preview, .side-menu, #mainSearch, header, .main-container { display: none !important; }
             #print-vale { 
                 display: block !important; 
-                position: relative !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                color: black !important;
-                background: white !important;
-                padding: 20px !important;
-                font-family: Arial, sans-serif !important;
-                page-break-after: avoid !important;
+                position: absolute !important; 
+                top: 0 !important; 
+                left: 0 !important; 
+                width: 100% !important; 
+                color: black !important; 
+                background: white !important; 
+                padding: 30px !important; 
+                font-family: Arial, sans-serif !important; 
+                margin: 0 !important;
             }
             #print-vale h2 { 
                 color: black !important; 
                 font-size: 20pt !important; 
-                margin: 10px 0 !important;
-                text-align: center !important;
-                border-bottom: 2px solid black !important;
-                padding-bottom: 10px !important;
+                margin: 10px 0 !important; 
+                text-align: center !important; 
+                border-bottom: 2px solid black !important; 
+                padding-bottom: 10px !important; 
             }
             #print-vale p { 
                 color: black !important; 
                 font-size: 11pt !important; 
-                margin: 8px 0 !important;
-                line-height: 1.4 !important;
+                margin: 8px 0 !important; 
+                line-height: 1.4 !important; 
             }
             #print-vale table { 
                 width: 100% !important; 
                 border-collapse: collapse !important; 
-                margin: 20px 0 !important;
-                color: black !important;
-                page-break-inside: avoid !important;
+                margin: 20px 0 !important; 
+                color: black !important; 
             }
             #print-vale table th { 
                 background: #333 !important; 
                 color: white !important; 
-                padding: 10px 8px !important;
-                border: 2px solid black !important;
-                font-size: 11pt !important;
-                text-align: center !important;
+                padding: 10px 8px !important; 
+                border: 2px solid black !important; 
+                font-size: 11pt !important; 
+                text-align: center !important; 
             }
             #print-vale table td { 
                 border: 1px solid black !important; 
-                padding: 8px !important;
-                color: black !important;
-                font-size: 10pt !important;
-                vertical-align: middle !important;
+                padding: 8px !important; 
+                color: black !important; 
+                font-size: 10pt !important; 
+                vertical-align: middle !important; 
             }
             .firmas-box { 
                 margin-top: 80px !important; 
                 display: flex !important; 
-                justify-content: space-around !important;
-                page-break-inside: avoid !important;
+                justify-content: space-around !important; 
             }
             .firma-item { 
                 text-align: center !important; 
                 border-top: 2px solid black !important; 
                 width: 220px !important; 
-                padding-top: 8px !important;
-                color: black !important;
-                font-weight: bold !important;
+                padding-top: 8px !important; 
+                color: black !important; 
+                font-weight: bold !important; 
             }
         }
     </style>
@@ -245,30 +241,24 @@
         </div>
     </div>
 
-    <div id="print-vale" style="display:none;">
-        <h2>VALE DE SALIDA DE MATERIAL</h2>
-        <p><strong>Fecha:</strong> <span id="f-fec"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Almacén:</strong> <span id="f-alm"></span></p>
-        <p><strong>Recibe:</strong> <span id="f-rec"></span> &nbsp;&nbsp;|&nbsp;&nbsp; <strong>Proyecto:</strong> <span id="f-pro"></span></p>
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:10%;">CANT.</th>
-                    <th style="width:20%;">MODELO</th>
-                    <th style="width:25%;">NO. PARTE</th>
-                    <th>DESCRIPCIÓN</th>
-                </tr>
-            </thead>
+    <!-- VALE DE IMPRESIÓN - MANTENIDO SIMPLE -->
+    <div id="print-vale" style="display:none; padding: 30px;">
+        <h2 style="text-align:center;">VALE DE SALIDA DE MATERIAL</h2>
+        <p><strong>Fecha:</strong> <span id="f-fec"></span> | <strong>Almacén:</strong> <span id="f-alm"></span></p>
+        <p><strong>Recibe:</strong> <span id="f-rec"></span> | <strong>Proyecto:</strong> <span id="f-pro"></span></p>
+        <table border="1" style="width:100%; border-collapse:collapse; margin-top: 20px;">
+            <thead><tr><th>CANT.</th><th>MODELO</th><th>NO. PARTE</th><th>DESCRIPCIÓN</th></tr></thead>
             <tbody id="f-lista"></tbody>
         </table>
-        <div class="firmas-box">
-            <div class="firma-item">Firma Almacén</div>
-            <div class="firma-item">Firma Recibe</div>
+        <div style="margin-top:80px; display:flex; justify-content:space-around;">
+            <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top: 5px;">Firma Almacén</div>
+            <div style="text-align:center; border-top:1px solid #000; width:200px; padding-top: 5px;">Firma Recibe</div>
         </div>
     </div>
 
     <script type="module">
         import { db, checkAuth } from './config.js';
-        import { collection, onSnapshot, doc, updateDoc, increment, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { collection, onSnapshot, doc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
         
         const user = checkAuth();
         const p = user.permisos || {};
@@ -279,7 +269,7 @@
 
         const esAdmin = user.usuario === 'admin';
         
-        // PERMISOS DE BOTONES - TODOS EN AZUL
+        // PERMISOS DE BOTONES
         if(esAdmin || p.registrar) document.getElementById('navReg').style.display = 'block';
         if(esAdmin || p.actualizar) document.getElementById('navAct').style.display = 'block';
         if(esAdmin || p.eliminar) document.getElementById('navEli').style.display = 'block';
@@ -325,7 +315,7 @@
             });
         }
 
-        // FUNCIÓN CORREGIDA - IGUAL QUE EL CÓDIGO ANTERIOR QUE FUNCIONABA
+        // FUNCIÓN DE DETALLES - IGUAL AL CÓDIGO ANTERIOR
         async function mostrarDetalle(item) {
             itemSeleccionado = item;
             document.getElementById('p-nombre').innerText = item.nombre;
@@ -360,7 +350,7 @@
             }
         }
 
-        // LÓGICA DE SUBIDA - IGUAL QUE EL CÓDIGO ANTERIOR
+        // LÓGICA DE SUBIDA
         const fileInput = document.getElementById('fileInput');
         const btnConfirmUp = document.getElementById('btnConfirmUp');
 
@@ -420,53 +410,43 @@
             `).join('');
         }
 
+        // FUNCIÓN DE SALIDA SIMPLIFICADA - COMO EL CÓDIGO ANTERIOR
         window.procesarSalida = async () => {
             const receptor = document.getElementById('recep').value.trim();
             const proyecto = document.getElementById('proyec').value.trim();
-            if(!receptor || !proyecto || carrito.length === 0) return alert("Completa todos los datos del vale");
+            
+            if(!receptor || !proyecto || carrito.length === 0) {
+                alert("Completa todos los datos del vale y agrega productos");
+                return;
+            }
 
-            if(confirm("¿Generar vale y descontar del inventario?")) {
+            if(confirm("¿Generar vale y descontar stock?")) {
                 const fechaHora = new Date();
                 document.getElementById('f-fec').innerText = fechaHora.toLocaleDateString('es-MX');
                 document.getElementById('f-alm').innerText = user.usuario;
                 document.getElementById('f-rec').innerText = receptor;
                 document.getElementById('f-pro').innerText = proyecto;
                 document.getElementById('f-lista').innerHTML = carrito.map(i => `
-                    <tr>
-                        <td style="text-align:center;">1 PZ</td>
-                        <td>${i.modelo || 'N/A'}</td>
-                        <td>${i.noParte || 'N/A'}</td>
-                        <td>${i.nombre || 'N/A'}</td>
-                    </tr>
+                    <tr><td>1 PZ</td><td>${i.modelo || 'N/A'}</td><td>${i.noParte || 'N/A'}</td><td>${i.nombre || 'N/A'}</td></tr>
                 `).join('');
-
-                // GUARDAR EN FIRESTORE (COLECCIÓN "movimientos")
-                await addDoc(collection(db, "movimientos"), {
-                    tipo: "SALIDA",
-                    fecha: serverTimestamp(),
-                    receptor: receptor,
-                    proyecto: proyecto,
-                    almacenista: user.usuario,
-                    productos: carrito.map(item => ({
-                        id: item.id,
-                        modelo: item.modelo || '',
-                        noParte: item.noParte || '',
-                        nombre: item.nombre || '',
-                        cantidad: 1
-                    }))
-                });
 
                 // DESCONTAR STOCK
                 for (const item of carrito) {
-                    await updateDoc(doc(db, "productos", item.id), { cantidad: increment(-1) });
+                    await updateDoc(doc(db, "productos", item.id), { 
+                        cantidad: increment(-1) 
+                    });
                 }
-
+                
+                // IMPRIMIR
                 window.print();
-                carrito = [];
+                
+                // LIMPIAR
+                carrito = []; 
                 dibujarCarrito();
-                document.getElementById('recep').value = '';
+                document.getElementById('recep').value = ''; 
                 document.getElementById('proyec').value = '';
-                alert("✅ Vale generado y movimiento registrado");
+                
+                alert("✅ Vale generado y stock actualizado");
             }
         };
 
